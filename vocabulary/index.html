@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#263238">
-  <meta name="description" content="百草园个人难词学习模块。">
+  <meta name="description" content="百草园个人难词学习模块：助记、辨析与本地复习状态。">
   <title>单词｜百草园</title>
   <link rel="manifest" href="../manifest.webmanifest">
   <link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
@@ -12,17 +12,61 @@
 </head>
 <body>
   <header class="vocab-bar">
-    <a class="vocab-brand" href="../">百草园</a>
-    <nav aria-label="应用主功能"><a href="../writing/part-b/">写作</a><a class="active" href="./" aria-current="page">单词</a></nav>
+    <a class="vocab-brand" href="../" aria-label="百草园首页">
+      <img src="../assets/icons/app-icon.svg" alt="">
+      <span>百草园</span>
+    </a>
+    <nav aria-label="应用主功能">
+      <a href="../writing/part-b/">写作</a>
+      <a class="active" href="./" aria-current="page">单词</a>
+    </nav>
   </header>
+
   <main class="vocab-main">
-    <p class="kicker">VOCABULARY · ANDROID FIRST</p>
-    <h1>只收那些反复背不住的词。</h1>
-    <p class="lead">单词合同、GPT 批次导入和构建工具已经保留；正式单词数据尚未交付，所以这里不拿随机词条假装产品很充实。下一批数据到位后，将接入搜索、展开详情、谐音与词根助记、形近词辨析和三档复习状态。</p>
-    <section class="status-card"><span>当前状态</span><strong>等待首批难词 JSON</strong><p>作文模块的开发和主题切换不会修改单词 Schema，也不会覆盖未来的复习进度。</p></section>
-    <div class="feature-grid"><article><b>01</b><h2>全面理解</h2><p>核心义、熟词僻义、词根、词族和搭配。</p></article><article><b>02</b><h2>记忆辅助</h2><p>谐音、联想与个人助记分开标注，不冒充词源。</p></article><article><b>03</b><h2>横向辨析</h2><p>形近词、近义词、反义词和考试陷阱。</p></article></div>
-    <a class="back-writing" href="../writing/part-b/">返回写作学习</a>
+    <section class="vocab-hero" aria-labelledby="vocab-title">
+      <div>
+        <p class="kicker">VOCABULARY · MEMORY FIRST</p>
+        <h1 id="vocab-title">只收那些反复背不住的词。</h1>
+        <p class="lead">先看十秒速记，需要时再展开义项、助记、辨析、搭配与例句。教材可以公开更新，你的认识程度和收藏只留在当前设备。</p>
+      </div>
+      <aside class="library-state" aria-label="词库状态">
+        <span>当前词库</span>
+        <strong id="vocabularyStatus">正在读取单词数据…</strong>
+        <p>外部 GPT 初稿保持“草稿 · 未核查”标记。</p>
+      </aside>
+    </section>
+
+    <section class="vocab-controls" aria-label="搜索与筛选">
+      <label class="search-box" for="wordSearch">
+        <span>搜索</span>
+        <input id="wordSearch" type="search" inputmode="search" autocomplete="off" placeholder="单词、中文义、助记、搭配…">
+      </label>
+      <div id="wordFilters" class="filter-row" aria-label="掌握程度筛选">
+        <button type="button" data-filter="all" aria-pressed="true">全部 <span>0</span></button>
+        <button type="button" data-filter="unrated" aria-pressed="false">未标记 <span>0</span></button>
+        <button type="button" data-filter="unknown" aria-pressed="false">不会 <span>0</span></button>
+        <button type="button" data-filter="unstable" aria-pressed="false">模糊 <span>0</span></button>
+        <button type="button" data-filter="known" aria-pressed="false">认识 <span>0</span></button>
+        <button type="button" data-filter="starred" aria-pressed="false">收藏 <span>0</span></button>
+      </div>
+      <div class="list-meta">
+        <p id="wordCount">正在读取词库…</p>
+        <p>点击词卡展开；掌握状态自动保存在本机。</p>
+      </div>
+    </section>
+
+    <section aria-live="polite" aria-busy="false">
+      <p id="wordLoading" class="loading-state">正在加载首批难词…</p>
+      <div id="wordList" class="word-list"></div>
+    </section>
+
+    <footer class="vocab-footer">
+      <p>公开教材 · 本地记录 · 无需账号</p>
+      <div><a href="../writing/part-b/">返回写作</a><a href="https://github.com/ztl3106742440-hub/baicaoyuan">GitHub</a></div>
+    </footer>
   </main>
+
+  <script type="module" src="../assets/js/vocabulary-app.js"></script>
   <script>
     if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("../sw.js", { scope: "../" }).catch(() => {});
   </script>

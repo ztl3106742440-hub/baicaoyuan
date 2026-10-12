@@ -1,6 +1,6 @@
 const CACHE_PREFIX = "kaoyan-english";
-const SHELL_CACHE = `${CACHE_PREFIX}-shell-v4-5`;
-const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-v4-5`;
+const SHELL_CACHE = `${CACHE_PREFIX}-shell-v4-6`;
+const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-v4-6`;
 const scopeUrl = new URL(self.registration.scope);
 const shellPaths = [
   "./",
@@ -15,6 +15,8 @@ const shellPaths = [
   "./assets/css/writing.css",
   "./assets/css/vocabulary.css",
   "./assets/js/storage.js",
+  "./assets/js/vocabulary-data.js",
+  "./assets/js/vocabulary-app.js",
   "./assets/js/writing-data.js",
   "./assets/js/writing-app.js",
   "./assets/icons/app-icon.svg",
@@ -30,6 +32,7 @@ const shellPaths = [
 const shellUrls = shellPaths.map((path) => new URL(path, scopeUrl).href);
 const publishedManifests = [
   { path: "./version.json", dataKey: "wordData" },
+  { path: "./version.preview.json", dataKey: "wordData" },
   { path: "./writing-version.json", dataKey: "writingData" },
   { path: "./writing-version.preview.json", dataKey: "writingData" },
 ];

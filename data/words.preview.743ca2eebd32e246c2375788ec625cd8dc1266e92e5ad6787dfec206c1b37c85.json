@@ -1,0 +1,839 @@
+{
+  "contentVersion": 1,
+  "generatedAt": "2026-10-12T00:00:00+08:00",
+  "schemaVersion": 1,
+  "words": [
+    {
+      "aliases": [],
+      "antonymGroups": [
+        {
+          "items": [
+            {
+              "word": "careless",
+              "wordId": null,
+              "zh": "粗心的；不认真的"
+            },
+            {
+              "word": "negligent",
+              "wordId": null,
+              "zh": "疏忽的；失职的"
+            }
+          ],
+          "senseId": "conscientious-adj-diligent"
+        }
+      ],
+      "collocations": [
+        {
+          "phrase": "a conscientious employee",
+          "priority": 5,
+          "senseId": "conscientious-adj-diligent",
+          "showInQuick": true,
+          "zh": "认真负责的员工"
+        },
+        {
+          "phrase": "be conscientious about one's work",
+          "priority": 4,
+          "senseId": "conscientious-adj-diligent",
+          "showInQuick": true,
+          "zh": "对工作认真负责"
+        }
+      ],
+      "confusables": [
+        {
+          "cue": "conscious＝意识；conscientious＝良心驱动的认真。",
+          "difference": "conscious 讲“有没有意识/是否意识到”；conscientious 讲“做事是否认真负责”。",
+          "word": "conscious",
+          "wordId": null,
+          "zh": "有意识的；意识到的"
+        },
+        {
+          "cue": "conspicuous 看起来最显眼；conscientious 做事最认真。",
+          "difference": "conspicuous 与责任感无关，强调很容易被看见或注意到。",
+          "word": "conspicuous",
+          "wordId": null,
+          "zh": "显眼的；引人注目的"
+        }
+      ],
+      "coreSense": "核心感觉是“有良知、对责任上心”，所以表示做事认真、负责、尽责，而不是单纯“聪明”或“有意识”。",
+      "difficulty": 4,
+      "editorial": {
+        "entryVersion": 1,
+        "generatedBy": {
+          "generatedAt": null,
+          "model": null,
+          "note": "首批最小测试词条；重点测试形近词辨析和拼写型助记。",
+          "source": "chatgpt"
+        },
+        "publicationStatus": "draft",
+        "sourceNotes": [],
+        "verificationStatus": "unverified"
+      },
+      "examPriority": 4,
+      "examTraps": [
+        "conscientious 不等于 conscious：前者是“认真负责”，后者是“有意识/意识到”。",
+        "它也不要和 conspicuous“显眼的”串台，三者长得像，但语义完全不是一家。"
+      ],
+      "examples": [
+        {
+          "en": "A conscientious reviewer checks not only whether the evidence is persuasive but also whether it has been fairly presented.",
+          "senseId": "conscientious-adj-diligent",
+          "sourceNoteId": null,
+          "type": "exam-style-original",
+          "zh": "一名认真负责的审稿人不仅会检查证据是否有说服力，还会看其呈现是否公正。"
+        }
+      ],
+      "id": "conscientious",
+      "learningFocus": [
+        "confusable",
+        "synonym",
+        "morphology"
+      ],
+      "lemma": "conscientious",
+      "memoryHookExemption": null,
+      "memoryHooks": [
+        {
+          "content": "拼写上抓住 conscience“良心”：有良心地把事做好→conscientious＝认真负责、尽责。",
+          "isEtymology": false,
+          "isPrimary": true,
+          "title": "里面藏着 conscience",
+          "type": "spelling"
+        }
+      ],
+      "morphology": {
+        "affixes": [],
+        "confidence": "none",
+        "etymologyNote": null,
+        "mnemonicSplit": [
+          {
+            "cue": "只作拼写联想：看到 conscience 就联想到“良心/责任感”，再推出“认真负责”。",
+            "form": "conscience → conscientious"
+          }
+        ],
+        "verifiedRoots": []
+      },
+      "pronunciation": {
+        "audio": null,
+        "uk": "/ˌkɒnʃiˈenʃəs/",
+        "us": "/ˌkɑːnʃiˈenʃəs/"
+      },
+      "recallLine": "conscientious：有良心地做事→认真负责；别和 conscious“有意识的”、conspicuous“显眼的”混。",
+      "relatedWordIds": [],
+      "senses": [
+        {
+          "examPriority": 5,
+          "id": "conscientious-adj-diligent",
+          "note": "常评价人的工作态度、职业操守或履责程度。",
+          "pos": "adj.",
+          "zh": [
+            "认真负责的",
+            "尽职尽责的",
+            "一丝不苟的"
+          ]
+        }
+      ],
+      "synonymGroups": [
+        {
+          "items": [
+            {
+              "nuance": "强调勤奋、肯下功夫。",
+              "word": "diligent",
+              "wordId": null
+            },
+            {
+              "nuance": "强调对细节极其仔细。",
+              "word": "meticulous",
+              "wordId": null
+            },
+            {
+              "nuance": "强调可靠、愿意承担责任，范围更宽。",
+              "word": "responsible",
+              "wordId": null
+            }
+          ],
+          "senseId": "conscientious-adj-diligent",
+          "summary": "都可表示认真，但 conscientious 更强调责任感和职业操守。"
+        }
+      ],
+      "tags": [
+        "confusable",
+        "synonym",
+        "exam-trap",
+        "morphology"
+      ],
+      "word": "conscientious",
+      "wordFamily": [
+        {
+          "pos": "n.",
+          "priority": 5,
+          "word": "conscience",
+          "wordId": null,
+          "zh": "良心；是非感"
+        },
+        {
+          "pos": "adv.",
+          "priority": 3,
+          "word": "conscientiously",
+          "wordId": null,
+          "zh": "认真负责地"
+        }
+      ]
+    },
+    {
+      "aliases": [],
+      "antonymGroups": [],
+      "collocations": [
+        {
+          "phrase": "impinge on individual freedom",
+          "priority": 5,
+          "senseId": "impinge-v-affect",
+          "showInQuick": true,
+          "zh": "妨碍个人自由"
+        },
+        {
+          "phrase": "impinge on privacy",
+          "priority": 5,
+          "senseId": "impinge-v-affect",
+          "showInQuick": true,
+          "zh": "侵扰隐私"
+        },
+        {
+          "phrase": "impinge upon performance",
+          "priority": 4,
+          "senseId": "impinge-v-affect",
+          "showInQuick": true,
+          "zh": "对表现产生不利影响"
+        }
+      ],
+      "confusables": [
+        {
+          "cue": "infringe 更像“违法越线”，impinge 更像“挤进来影响你”。",
+          "difference": "impinge on 强调产生影响或侵扰；infringe 常直接表示侵犯权利、违反法律或规则。",
+          "word": "infringe",
+          "wordId": null,
+          "zh": "侵犯；违反"
+        }
+      ],
+      "coreSense": "核心感觉是“碰到并压到别人的边界”：字面可指碰撞，更常见于 impinge on/upon，表示对权利、自由、空间或效果产生影响甚至侵扰。",
+      "difficulty": 4,
+      "editorial": {
+        "entryVersion": 1,
+        "generatedBy": {
+          "generatedAt": null,
+          "model": null,
+          "note": "首批最小测试词条；重点测试抽象动词、固定介词和近义词边界。",
+          "source": "chatgpt"
+        },
+        "publicationStatus": "draft",
+        "sourceNotes": [],
+        "verificationStatus": "unverified"
+      },
+      "examPriority": 5,
+      "examTraps": [
+        "impinge 在阅读里最危险的不是“碰撞”，而是 impinge on/upon＝影响、妨碍、侵扰。",
+        "它往往带负面色彩，但不一定强到等同于“彻底侵犯”。"
+      ],
+      "examples": [
+        {
+          "en": "Measures designed to improve security may also impinge on personal privacy.",
+          "senseId": "impinge-v-affect",
+          "sourceNoteId": null,
+          "type": "exam-style-original",
+          "zh": "旨在提升安全的措施也可能侵扰个人隐私。"
+        }
+      ],
+      "id": "impinge",
+      "learningFocus": [
+        "collocation",
+        "synonym",
+        "abstract"
+      ],
+      "lemma": "impinge",
+      "memoryHookExemption": null,
+      "memoryHooks": [
+        {
+          "content": "想象邻座的胳膊肘越过扶手挤到你的空间：一旦“碰到边界”，就会 impinge on 你的空间、自由或权利。",
+          "isEtymology": false,
+          "isPrimary": true,
+          "title": "胳膊肘越过座位边界",
+          "type": "scene"
+        }
+      ],
+      "morphology": {
+        "affixes": [],
+        "confidence": "none",
+        "etymologyNote": null,
+        "mnemonicSplit": [],
+        "verifiedRoots": []
+      },
+      "pronunciation": {
+        "audio": null,
+        "uk": "/ɪmˈpɪndʒ/",
+        "us": "/ɪmˈpɪndʒ/"
+      },
+      "recallLine": "impinge on/upon：碰到边界→对……造成影响/妨碍，常见于 freedom、privacy、rights。",
+      "relatedWordIds": [],
+      "senses": [
+        {
+          "examPriority": 5,
+          "id": "impinge-v-affect",
+          "note": "几乎总与 on/upon 连用，且常带不利影响。",
+          "pos": "v.",
+          "zh": [
+            "影响",
+            "妨碍",
+            "侵扰"
+          ]
+        },
+        {
+          "examPriority": 2,
+          "id": "impinge-v-strike",
+          "note": "字面义，考试价值低于抽象义。",
+          "pos": "v.",
+          "zh": [
+            "撞击",
+            "碰到"
+          ]
+        }
+      ],
+      "synonymGroups": [
+        {
+          "items": [
+            {
+              "nuance": "最中性、最宽泛，只表示产生影响。",
+              "word": "affect",
+              "wordId": null
+            },
+            {
+              "nuance": "强调妨碍正常进行或运作。",
+              "word": "interfere with",
+              "wordId": null
+            },
+            {
+              "nuance": "更强调侵犯权利、自由或规则边界。",
+              "word": "infringe on",
+              "wordId": null
+            }
+          ],
+          "senseId": "impinge-v-affect",
+          "summary": "这些表达都可表示产生负面影响，但严重程度和对象不同。"
+        }
+      ],
+      "tags": [
+        "high-priority",
+        "collocation",
+        "abstract",
+        "synonym",
+        "exam-trap"
+      ],
+      "word": "impinge",
+      "wordFamily": [
+        {
+          "pos": "n.",
+          "priority": 2,
+          "word": "impingement",
+          "wordId": null,
+          "zh": "影响；侵扰；撞击"
+        }
+      ]
+    },
+    {
+      "aliases": [],
+      "antonymGroups": [],
+      "collocations": [
+        {
+          "phrase": "leverage resources",
+          "priority": 5,
+          "senseId": "leverage-v-use",
+          "showInQuick": true,
+          "zh": "充分利用资源"
+        },
+        {
+          "phrase": "leverage data to improve decisions",
+          "priority": 5,
+          "senseId": "leverage-v-use",
+          "showInQuick": true,
+          "zh": "利用数据改进决策"
+        },
+        {
+          "phrase": "have leverage over somebody",
+          "priority": 5,
+          "senseId": "leverage-n-influence",
+          "showInQuick": true,
+          "zh": "对某人有制衡或谈判优势"
+        },
+        {
+          "phrase": "financial leverage",
+          "priority": 3,
+          "senseId": "leverage-n-finance",
+          "showInQuick": false,
+          "zh": "财务杠杆"
+        }
+      ],
+      "confusables": [],
+      "coreSense": "核心感觉是“用杠杆把已有力量放大”：既可指现实或金融杠杆，也常作动词表示充分利用资源、优势或影响力。",
+      "difficulty": 4,
+      "editorial": {
+        "entryVersion": 1,
+        "generatedBy": {
+          "generatedAt": null,
+          "model": null,
+          "note": "首批最小测试词条；重点测试多义词、搭配和阅读同义替换的展示密度。",
+          "source": "chatgpt"
+        },
+        "publicationStatus": "draft",
+        "sourceNotes": [],
+        "verificationStatus": "unverified"
+      },
+      "examPriority": 5,
+      "examTraps": [
+        "看到 leverage 不要只反应成“杠杆”；学术和商业阅读里最常见的是动词“充分利用”。",
+        "have leverage over somebody 不是“在某人上方有杠杆”，而是“对某人有筹码或制衡力”。"
+      ],
+      "examples": [
+        {
+          "en": "Small firms can leverage specialized knowledge to compete with much larger rivals.",
+          "senseId": "leverage-v-use",
+          "sourceNoteId": null,
+          "type": "exam-style-original",
+          "zh": "小企业可以充分利用专业知识，与规模大得多的竞争对手抗衡。"
+        }
+      ],
+      "id": "leverage",
+      "learningFocus": [
+        "polysemy",
+        "collocation",
+        "synonym"
+      ],
+      "lemma": "leverage",
+      "memoryHookExemption": null,
+      "memoryHooks": [
+        {
+          "content": "想象一根短杠杆把大石头撬起来：leverage 的核心不是“拥有资源”，而是把已有资源放大利用。",
+          "isEtymology": false,
+          "isPrimary": true,
+          "title": "小杠杆撬大石头",
+          "type": "scene"
+        }
+      ],
+      "morphology": {
+        "affixes": [],
+        "confidence": "none",
+        "etymologyNote": null,
+        "mnemonicSplit": [
+          {
+            "cue": "只作记忆拆分：把 leverage 联想到 lever“杠杆”，提醒自己想到“放大利用”。",
+            "form": "lever + age"
+          }
+        ],
+        "verifiedRoots": []
+      },
+      "pronunciation": {
+        "audio": null,
+        "uk": null,
+        "us": "/ˈlevərɪdʒ/"
+      },
+      "recallLine": "leverage：把已有力量放大；v.充分利用，n.影响力/筹码；leverage A to do B 很常见。",
+      "relatedWordIds": [],
+      "senses": [
+        {
+          "examPriority": 5,
+          "id": "leverage-v-use",
+          "note": "考研阅读最值得警惕的动词义，常见结构是 leverage A to do B。",
+          "pos": "v.",
+          "zh": [
+            "充分利用",
+            "借助……发挥更大作用"
+          ]
+        },
+        {
+          "examPriority": 5,
+          "id": "leverage-n-influence",
+          "note": "常指能迫使他人让步或改善自身地位的力量。",
+          "pos": "n.",
+          "zh": [
+            "影响力",
+            "优势",
+            "谈判筹码"
+          ]
+        },
+        {
+          "examPriority": 3,
+          "id": "leverage-n-finance",
+          "note": "经济金融语境常指借债放大投资规模或收益与风险。",
+          "pos": "n.",
+          "zh": [
+            "杠杆作用",
+            "财务杠杆"
+          ]
+        }
+      ],
+      "synonymGroups": [
+        {
+          "items": [
+            {
+              "nuance": "正式地“使用、利用”，不强调放大优势。",
+              "word": "utilize",
+              "wordId": null
+            },
+            {
+              "nuance": "强调充分开发或利用，有时带“利用他人”的负面色彩。",
+              "word": "exploit",
+              "wordId": null
+            },
+            {
+              "nuance": "强调抓住机会或有利条件获益。",
+              "word": "capitalize on",
+              "wordId": null
+            }
+          ],
+          "senseId": "leverage-v-use",
+          "summary": "都可表示“利用”，但 leverage 强调借助已有优势把效果放大。"
+        },
+        {
+          "items": [
+            {
+              "nuance": "最宽泛的影响力，可直接也可间接。",
+              "word": "influence",
+              "wordId": null
+            },
+            {
+              "nuance": "较口语，强调实际权势或能左右结果的力量。",
+              "word": "clout",
+              "wordId": null
+            }
+          ],
+          "senseId": "leverage-n-influence",
+          "summary": "都可表示影响力，但 leverage 常带“可用于谈判或迫使对方让步”的意味。"
+        }
+      ],
+      "tags": [
+        "high-priority",
+        "polysemy",
+        "collocation",
+        "synonym",
+        "exam-trap"
+      ],
+      "word": "leverage",
+      "wordFamily": [
+        {
+          "pos": "adj.",
+          "priority": 3,
+          "word": "leveraged",
+          "wordId": null,
+          "zh": "利用杠杆的；负债较高的"
+        }
+      ]
+    },
+    {
+      "aliases": [],
+      "antonymGroups": [
+        {
+          "items": [
+            {
+              "word": "prepared",
+              "wordId": null,
+              "zh": "事先准备好的"
+            },
+            {
+              "word": "scripted",
+              "wordId": null,
+              "zh": "按稿件或脚本安排好的"
+            }
+          ],
+          "senseId": "off-the-cuff-phrase-unprepared"
+        }
+      ],
+      "collocations": [
+        {
+          "phrase": "an off-the-cuff remark",
+          "priority": 5,
+          "senseId": "off-the-cuff-phrase-unprepared",
+          "showInQuick": true,
+          "zh": "随口说出的评论"
+        },
+        {
+          "phrase": "an off-the-cuff response",
+          "priority": 5,
+          "senseId": "off-the-cuff-phrase-unprepared",
+          "showInQuick": true,
+          "zh": "即兴回应"
+        },
+        {
+          "phrase": "speak off the cuff",
+          "priority": 5,
+          "senseId": "off-the-cuff-phrase-unprepared",
+          "showInQuick": true,
+          "zh": "脱稿即席发言"
+        }
+      ],
+      "confusables": [],
+      "coreSense": "核心意思就是“没有事先准备，临场随口而来”，常修饰 remark、comment、response，也可用 speak off the cuff。",
+      "difficulty": 4,
+      "editorial": {
+        "entryVersion": 1,
+        "generatedBy": {
+          "generatedAt": null,
+          "model": null,
+          "note": "首批最小测试词条；重点测试非字面短语、新闻语境和快速搭配。",
+          "source": "chatgpt"
+        },
+        "publicationStatus": "draft",
+        "sourceNotes": [],
+        "verificationStatus": "unverified"
+      },
+      "examPriority": 4,
+      "examTraps": [
+        "这是非字面表达，不能拆成 off＋cuff 去硬翻；整块识别为“即兴、未经准备”。",
+        "作形容词时常放在名词前；作副词性短语时常见 speak off the cuff。"
+      ],
+      "examples": [
+        {
+          "en": "What appeared to be an off-the-cuff remark was later treated as evidence of the minister's real position.",
+          "senseId": "off-the-cuff-phrase-unprepared",
+          "sourceNoteId": null,
+          "type": "exam-style-original",
+          "zh": "一句看似随口而出的评论，后来却被当作该部长真实立场的证据。"
+        }
+      ],
+      "id": "off-the-cuff",
+      "learningFocus": [
+        "collocation",
+        "abstract"
+      ],
+      "lemma": "off-the-cuff",
+      "memoryHookExemption": null,
+      "memoryHooks": [
+        {
+          "content": "想象记者突然追问，你没有稿子只能当场回答：这种临场、没准备的发言就是 off-the-cuff。",
+          "isEtymology": false,
+          "isPrimary": true,
+          "title": "记者突然递来话筒",
+          "type": "scene"
+        }
+      ],
+      "morphology": {
+        "affixes": [],
+        "confidence": "none",
+        "etymologyNote": null,
+        "mnemonicSplit": [],
+        "verifiedRoots": []
+      },
+      "pronunciation": {
+        "audio": null,
+        "uk": null,
+        "us": "/ˌɔːf ðə ˈkʌf/"
+      },
+      "recallLine": "off-the-cuff＝没准备、临场随口；remark/response 常见，speak off the cuff＝脱稿即席说。",
+      "relatedWordIds": [],
+      "senses": [
+        {
+          "examPriority": 5,
+          "id": "off-the-cuff-phrase-unprepared",
+          "note": "新闻、采访和评论语境常见，不能按 cuff“袖口”逐词翻译。",
+          "pos": "phrase",
+          "zh": [
+            "即兴的",
+            "未经准备的",
+            "随口说出的"
+          ]
+        }
+      ],
+      "synonymGroups": [
+        {
+          "items": [
+            {
+              "nuance": "强调自然、自发产生，不一定与“讲话没准备”有关。",
+              "word": "spontaneous",
+              "wordId": null
+            },
+            {
+              "nuance": "直接表示临时、即兴，既可修饰讲话也可修饰活动。",
+              "word": "impromptu",
+              "wordId": null
+            },
+            {
+              "nuance": "较正式，尤其指没有完整稿件的即席发言。",
+              "word": "extemporaneous",
+              "wordId": null
+            }
+          ],
+          "senseId": "off-the-cuff-phrase-unprepared",
+          "summary": "都表示即兴，但正式程度和使用位置略有差异。"
+        }
+      ],
+      "tags": [
+        "collocation",
+        "abstract",
+        "exam-trap"
+      ],
+      "word": "off-the-cuff",
+      "wordFamily": []
+    },
+    {
+      "aliases": [],
+      "antonymGroups": [],
+      "collocations": [
+        {
+          "phrase": "poach talent from a rival",
+          "priority": 5,
+          "senseId": "poach-v-steal-talent",
+          "showInQuick": true,
+          "zh": "从竞争对手处挖人才"
+        },
+        {
+          "phrase": "poach customers",
+          "priority": 4,
+          "senseId": "poach-v-steal-talent",
+          "showInQuick": true,
+          "zh": "抢走客户"
+        },
+        {
+          "phrase": "poach endangered animals",
+          "priority": 5,
+          "senseId": "poach-v-illegal-hunt",
+          "showInQuick": true,
+          "zh": "偷猎濒危动物"
+        }
+      ],
+      "confusables": [],
+      "coreSense": "现代英语里要分两条义线：一条是“水煮”，另一条是“未经允许拿走”，后者延伸出偷猎、挖走人才或抢客户；考研更该盯住后一条。",
+      "difficulty": 4,
+      "editorial": {
+        "entryVersion": 1,
+        "generatedBy": {
+          "generatedAt": null,
+          "model": null,
+          "note": "首批最小测试词条；重点测试熟词僻义、多义分线和商业/环境主题用法。",
+          "source": "chatgpt"
+        },
+        "publicationStatus": "draft",
+        "sourceNotes": [],
+        "verificationStatus": "unverified"
+      },
+      "examPriority": 5,
+      "examTraps": [
+        "遇到 company、staff、talent、customers 时，poach 几乎不是“水煮”，而是“挖走、抢走”。",
+        "环境语境中的 poach 指非法猎捕，不是普通 hunt。"
+      ],
+      "examples": [
+        {
+          "en": "Smaller firms often struggle to retain engineers when larger rivals poach experienced staff.",
+          "senseId": "poach-v-steal-talent",
+          "sourceNoteId": null,
+          "type": "exam-style-original",
+          "zh": "当更大的竞争对手挖走有经验的员工时，小公司往往很难留住工程师。"
+        }
+      ],
+      "id": "poach",
+      "learningFocus": [
+        "rare-sense",
+        "polysemy",
+        "collocation"
+      ],
+      "lemma": "poach",
+      "memoryHookExemption": null,
+      "memoryHooks": [
+        {
+          "content": "把高频考试义记成“从不属于自己的池子里捞走东西”：捞野生动物是偷猎，捞竞争对手员工就是挖人。",
+          "isEtymology": false,
+          "isPrimary": true,
+          "title": "从别人池子里悄悄捞走",
+          "type": "scene"
+        }
+      ],
+      "morphology": {
+        "affixes": [],
+        "confidence": "none",
+        "etymologyNote": null,
+        "mnemonicSplit": [],
+        "verifiedRoots": []
+      },
+      "pronunciation": {
+        "audio": null,
+        "uk": "/pəʊtʃ/",
+        "us": "/poʊtʃ/"
+      },
+      "recallLine": "poach：考试先想“从别人那里偷着拿走”→偷猎、挖人、抢客户；水煮义反而次要。",
+      "relatedWordIds": [],
+      "senses": [
+        {
+          "examPriority": 5,
+          "id": "poach-v-steal-talent",
+          "note": "商业、就业和竞争语境很有考试价值。",
+          "pos": "v.",
+          "zh": [
+            "挖走人才",
+            "抢走客户或资源"
+          ]
+        },
+        {
+          "examPriority": 4,
+          "id": "poach-v-illegal-hunt",
+          "note": "环境、生态和动物保护主题常见。",
+          "pos": "v.",
+          "zh": [
+            "偷猎",
+            "非法捕捞"
+          ]
+        },
+        {
+          "examPriority": 1,
+          "id": "poach-v-cook",
+          "note": "日常义，和“偷猎/挖人”不是同一条考试语义线。",
+          "pos": "v.",
+          "zh": [
+            "水煮",
+            "用微沸液体煮"
+          ]
+        }
+      ],
+      "synonymGroups": [
+        {
+          "items": [
+            {
+              "nuance": "普通“招聘”，不暗示人才来自竞争对手。",
+              "word": "recruit",
+              "wordId": null
+            },
+            {
+              "nuance": "主动物色高价值人才，但不一定表示从竞争对手处挖走。",
+              "word": "headhunt",
+              "wordId": null
+            },
+            {
+              "nuance": "强调用条件把人从原单位吸引走，语义上最接近挖角。",
+              "word": "lure away",
+              "wordId": null
+            }
+          ],
+          "senseId": "poach-v-steal-talent",
+          "summary": "都可表示招聘或吸引人才，但 poach 明确带“从竞争对手那里挖走”的竞争意味。"
+        }
+      ],
+      "tags": [
+        "high-priority",
+        "rare-sense",
+        "polysemy",
+        "exam-trap",
+        "collocation"
+      ],
+      "word": "poach",
+      "wordFamily": [
+        {
+          "pos": "n.",
+          "priority": 3,
+          "word": "poacher",
+          "wordId": null,
+          "zh": "偷猎者；挖角者"
+        },
+        {
+          "pos": "n.",
+          "priority": 4,
+          "word": "poaching",
+          "wordId": null,
+          "zh": "偷猎；挖角行为"
+        }
+      ]
+    }
+  ]
+}

@@ -57,6 +57,40 @@ export function saveReviewState(entityId, status, contentVersion = null) {
   }));
 }
 
+export function getWordProgress(wordId) {
+  return transact("wordProgress", "readonly", (store) => store.get(wordId));
+}
+
+export function listWordProgress() {
+  return transact("wordProgress", "readonly", (store) => store.getAll());
+}
+
+export async function saveWordProgress(wordId, changes = {}) {
+  const current = await getWordProgress(wordId) ?? {};
+  const record = {
+    schemaVersion: 1,
+    wordId,
+    status: "new",
+    stage: 0,
+    lastRating: null,
+    lastReviewedAt: null,
+    dueDate: null,
+    correctStreak: 0,
+    lapses: 0,
+    reviewCount: 0,
+    starred: false,
+    markedDifficult: false,
+    personalMnemonic: "",
+    personalNote: "",
+    ...current,
+    ...changes,
+    wordId,
+    updatedAt: new Date().toISOString(),
+  };
+  const savedKey = await transact("wordProgress", "readwrite", (store) => store.put(record));
+  return savedKey == null ? null : record;
+}
+
 export function readPreference(key) {
   return transact("meta", "readonly", (store) => store.get(`preference:${key}`));
 }
