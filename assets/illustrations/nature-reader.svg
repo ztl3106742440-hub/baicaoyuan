@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" role="img" aria-labelledby="title desc">
+  <title id="title">林间阅读的猫和狗</title>
+  <desc id="desc">猫和狗坐在打开的书旁，周围有叶片、阳光和拱形林间背景。</desc>
+  <defs>
+    <linearGradient id="wash" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#dce8d5"/>
+      <stop offset="1" stop-color="#faecd8"/>
+    </linearGradient>
+    <pattern id="grain" width="8" height="8" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r=".55" fill="#72836f" opacity=".2"/>
+    </pattern>
+  </defs>
+  <path d="M116 450V194C116 88 211 36 319 36c112 0 202 85 202 199v215" fill="url(#wash)"/>
+  <path d="M106 450V196C106 80 208 25 319 25c122 0 214 91 214 210v215" fill="none" stroke="#788d78" stroke-width="2.5"/>
+  <circle cx="420" cy="123" r="57" fill="#f7d9a8" opacity=".86"/>
+  <path d="M0 450h640" stroke="#84917b" stroke-width="3"/>
+  <g fill="none" stroke="#667b67" stroke-width="3.2" stroke-linecap="round">
+    <path d="M74 450c40-103 35-189 30-294M104 275c-51-9-77-43-80-82M103 315c-56 12-81-17-89-49M105 248c48-23 61-57 60-91M104 363c62-7 81-52 84-81"/>
+    <path d="M570 450c-29-92-29-164-10-270M565 292c45-13 64-47 68-81M566 343c-50-6-80-42-89-75M574 399c31-2 48-31 53-58"/>
+  </g>
+  <g fill="#a7bb9e" opacity=".78">
+    <ellipse cx="48" cy="205" rx="13" ry="32" transform="rotate(-52 48 205)"/>
+    <ellipse cx="147" cy="190" rx="13" ry="34" transform="rotate(35 147 190)"/>
+    <ellipse cx="40" cy="284" rx="12" ry="30" transform="rotate(-65 40 284)"/>
+    <ellipse cx="162" cy="309" rx="12" ry="30" transform="rotate(56 162 309)"/>
+    <ellipse cx="606" cy="237" rx="13" ry="33" transform="rotate(42 606 237)"/>
+    <ellipse cx="523" cy="269" rx="13" ry="33" transform="rotate(-42 523 269)"/>
+  </g>
+  <path d="M218 377q40-18 83-2l22 18q39-25 91-10v52q-51-14-91 12-36-20-105-11z" fill="#fffaf0" stroke="#877968" stroke-width="2.8"/>
+  <path d="M322 393v52M237 395q38-10 67 2M347 397q26-8 51-2" fill="none" stroke="#b6a383" stroke-width="1.8"/>
+  <g>
+    <path d="M208 346q-31-27-17-69l25-37 24 15q40-11 79 4l24-26 15 43q14 35-12 65l-7 55-129-2z" fill="#dfb895" stroke="#7e6658" stroke-width="3.3"/>
+    <path d="M222 248l7 31-27-7M331 242l-6 34 30-4" fill="#efc4ae" stroke="#7e6658" stroke-width="2.5"/>
+    <path d="M244 307q10-8 21 0M299 306q10-8 21 0M280 315l-7 7h14zM280 322q-17 13-28 1M281 322q17 13 29 0" fill="none" stroke="#73594c" stroke-width="2.8" stroke-linecap="round"/>
+    <path d="M227 319l-39-9m40 16-41 4m130-11 39-10m-38 17 40 2" stroke="#73594c" stroke-width="2"/>
+  </g>
+  <g>
+    <path d="M355 376q-18-46 11-81l21-18q39-15 73 10l23 29q5 39-21 68l13 66H351z" fill="#afa08b" stroke="#6f675e" stroke-width="3.3"/>
+    <path d="M382 289q-30-8-36 26-1 25 18 35 13-23 18-61M447 291q36-9 42 22 0 26-27 39z" fill="#8d7767" stroke="#6f675e" stroke-width="2.5"/>
+    <ellipse cx="405" cy="329" rx="5" ry="6" fill="#4f4944"/>
+    <ellipse cx="447" cy="329" rx="5" ry="6" fill="#4f4944"/>
+    <path d="M417 348q10-8 20 0l-9 9z" fill="#554943"/>
+    <path d="M429 357q-2 14-15 13m15-13q2 14 15 12" fill="none" stroke="#66564d" stroke-width="2.4"/>
+  </g>
+  <rect width="640" height="480" fill="url(#grain)" opacity=".65"/>
+</svg>

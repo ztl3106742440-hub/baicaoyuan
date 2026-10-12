@@ -1,0 +1,1332 @@
+{
+  "demo": true,
+  "disclaimerZh": "结构演示数据，仅用于验证界面与数据映射，不是真题、官方范文或正式教材。",
+  "entries": [
+    {
+      "alternatives": [
+        {
+          "level": "safe",
+          "note": "长句容易失控时拆成三句。",
+          "patternEn": "Two factors may help explain [phenomenon]. First, [reason one]. Second, [reason two].",
+          "zhHint": "两个因素可以解释该现象。第一……第二……"
+        }
+      ],
+      "applicationLimits": [
+        "只有一条可靠原因时改用 One important reason is that。",
+        "不要把同一意思换词后冒充两条原因。"
+      ],
+      "category": "cause",
+      "commonErrors": [
+        {
+          "correct": "The reasons are twofold.",
+          "reasonZh": "twofold 对应复数 reasons。",
+          "wrong": "The reason are twofold."
+        },
+        {
+          "correct": "One important reason is convenience.",
+          "reasonZh": "只写一条原因时不要使用 twofold。",
+          "wrong": "The reasons are twofold: convenience."
+        }
+      ],
+      "difficulty": 3,
+      "editorial": {
+        "entryVersion": 1,
+        "generatedBy": {
+          "generatedAt": null,
+          "model": null,
+          "note": "Codex 创建的结构演示内容，仅用于验证数据合同与页面映射，不代表正式教材或事实核查。",
+          "source": "codex"
+        },
+        "publicationStatus": "draft",
+        "sourceNotes": [],
+        "verificationStatus": "unverified"
+      },
+      "examPart": "B",
+      "examples": [
+        {
+          "en": "The reasons behind this change are twofold: digital tools save time, and wider access allows more people to participate.",
+          "id": "ex-cause",
+          "sourceNoteId": null,
+          "sourceType": "codex-demo",
+          "zh": "这一变化背后的原因有两点：数字工具节省时间，而更广泛的接入让更多人能够参与。"
+        }
+      ],
+      "id": "we-cause-twofold",
+      "kind": "expression",
+      "learningPriority": "recommended",
+      "meaningZh": "某现象背后的原因有两点：第一条原因，以及第二条原因。",
+      "memorizationCue": "twofold 就是签合同说“我后面真有两条”；少一条都算违约。",
+      "order": 40,
+      "origin": {
+        "label": "原创结构演示，不是真题、官方范文或用户历史数据",
+        "sourceNoteId": null,
+        "sourceType": "codex-demo"
+      },
+      "patternEn": "The reasons behind [phenomenon] are twofold: [reason one], and [reason two].",
+      "relatedPromptIds": [
+        "wp-demo-picture-persistence"
+      ],
+      "relatedTemplateIds": [
+        "wt-demo-picture-growth"
+      ],
+      "relatedTopicIds": [
+        "wi-growth-persistence",
+        "wi-technology-balance"
+      ],
+      "slots": [
+        {
+          "examples": [
+            {
+              "en": "this pattern",
+              "zh": "这一规律"
+            }
+          ],
+          "grammar": "名词短语",
+          "id": "phenomenon",
+          "placeholder": "[phenomenon]",
+          "required": true,
+          "zhHint": "待解释现象"
+        },
+        {
+          "examples": [
+            {
+              "en": "small tasks reduce the pressure of starting",
+              "zh": "小任务降低开始压力"
+            }
+          ],
+          "grammar": "完整分句",
+          "id": "reason-one",
+          "placeholder": "[reason one]",
+          "required": true,
+          "zhHint": "第一条原因"
+        },
+        {
+          "examples": [
+            {
+              "en": "repeated practice builds a stable habit",
+              "zh": "重复练习建立稳定习惯"
+            }
+          ],
+          "grammar": "与第一条平行的完整分句",
+          "id": "reason-two",
+          "placeholder": "[reason two]",
+          "required": true,
+          "zhHint": "第二条原因"
+        }
+      ],
+      "tags": [
+        "big-essay",
+        "high-reuse",
+        "structure",
+        "exam-risk",
+        "demo-content"
+      ],
+      "title": "展开两条平行原因",
+      "usageConditions": [
+        "确实能给出两条彼此有区分、都能解释中心现象的原因。"
+      ],
+      "wordIds": [],
+      "zhSummary": "明确承诺两条原因，并用平行分句解释现象；原因不足两条时不用 twofold。"
+    },
+    {
+      "alternatives": [
+        {
+          "level": "safe",
+          "note": "倒装不熟时优先使用普通语序。",
+          "patternEn": "By [action], we can [positive result].",
+          "zhHint": "通过某项行动，我们能够取得某个结果。"
+        }
+      ],
+      "applicationLimits": [
+        "不确定倒装时使用安全替换，不要为了看起来高级而写错。",
+        "action 必须回应正文论证，不能临时加入无关口号。"
+      ],
+      "category": "conclusion",
+      "commonErrors": [
+        {
+          "correct": "Only by practicing can we improve.",
+          "reasonZh": "by 后接动名词；Only by 置于句首时主句倒装。",
+          "wrong": "Only by practice we can improve."
+        }
+      ],
+      "difficulty": 4,
+      "editorial": {
+        "entryVersion": 1,
+        "generatedBy": {
+          "generatedAt": null,
+          "model": null,
+          "note": "Codex 创建的结构演示内容，仅用于验证数据合同与页面映射，不代表正式教材或事实核查。",
+          "source": "codex"
+        },
+        "publicationStatus": "draft",
+        "sourceNotes": [],
+        "verificationStatus": "unverified"
+      },
+      "examPart": "B",
+      "examples": [
+        {
+          "en": "Only by matching convenience with responsibility can we make technology serve long-term well-being.",
+          "id": "ex-conclusion",
+          "sourceNoteId": null,
+          "sourceType": "codex-demo",
+          "zh": "只有让便利与责任相匹配，我们才能使科技服务于长期福祉。"
+        }
+      ],
+      "id": "we-conclusion-action",
+      "kind": "expression",
+      "learningPriority": "must-memorize",
+      "meaningZh": "只有通过某项行动，我们才能取得某个积极结果。",
+      "memorizationCue": "Only by 放句首，后面立刻 can we；by 后接 doing。",
+      "order": 50,
+      "origin": {
+        "label": "原创结构演示，不是真题、官方范文或用户历史数据",
+        "sourceNoteId": null,
+        "sourceType": "codex-demo"
+      },
+      "patternEn": "Only by [action] can we [positive result].",
+      "relatedPromptIds": [
+        "wp-demo-picture-persistence"
+      ],
+      "relatedTemplateIds": [
+        "wt-demo-picture-growth"
+      ],
+      "relatedTopicIds": [
+        "wi-growth-persistence",
+        "wi-technology-balance"
+      ],
+      "slots": [
+        {
+          "examples": [
+            {
+              "en": "valuing steady effort",
+              "zh": "重视稳定投入"
+            }
+          ],
+          "grammar": "by 后接动名词或名词短语",
+          "id": "action",
+          "placeholder": "[action]",
+          "required": true,
+          "zhHint": "具体行动"
+        },
+        {
+          "examples": [
+            {
+              "en": "turn plans into progress",
+              "zh": "把计划转化为进步"
+            }
+          ],
+          "grammar": "can we 后接动词原形",
+          "id": "result",
+          "placeholder": "[positive result]",
+          "required": true,
+          "zhHint": "积极结果"
+        }
+      ],
+      "tags": [
+        "big-essay",
+        "high-reuse",
+        "structure",
+        "demo-content"
+      ],
+      "title": "用行动条件收束全文",
+      "usageConditions": [
+        "结尾需要强调行动条件，而且能够稳定使用部分倒装。"
+      ],
+      "wordIds": [],
+      "zhSummary": "用 Only by 引出与主题直接相关的行动，再通过倒装结构写出积极结果。"
+    },
+    {
+      "alternatives": [
+        {
+          "level": "safe",
+          "note": "只有主题确实是重要性判断时使用。",
+          "patternEn": "The drawing shows the importance of [theme].",
+          "zhHint": "这幅图体现了某主题的重要性。"
+        },
+        {
+          "level": "advanced",
+          "note": "确保 embodied 的搭配和句法使用正确。",
+          "patternEn": "The central message embodied in the drawing is that [central message].",
+          "zhHint": "图画体现的中心信息是……"
+        }
+      ],
+      "applicationLimits": [
+        "如果题目要求的是应用文交际任务，不要强行使用图画寓意句。",
+        "中心观点不得与题面细节相冲突。"
+      ],
+      "category": "implication",
+      "commonErrors": [
+        {
+          "correct": "What the drawing seeks to convey is that perseverance requires consistent action.",
+          "reasonZh": "原句搭配生硬且观点过于空泛；that 从句更便于表达完整判断。",
+          "wrong": "What the drawing wants to tell is perseverance."
+        }
+      ],
+      "difficulty": 3,
+      "editorial": {
+        "entryVersion": 1,
+        "generatedBy": {
+          "generatedAt": null,
+          "model": null,
+          "note": "Codex 创建的结构演示内容，仅用于验证数据合同与页面映射，不代表正式教材或事实核查。",
+          "source": "codex"
+        },
+        "publicationStatus": "draft",
+        "sourceNotes": [],
+        "verificationStatus": "unverified"
+      },
+      "examPart": "B",
+      "examples": [
+        {
+          "en": "What the drawing seeks to convey is that patient effort is often more valuable than a short burst of enthusiasm.",
+          "id": "ex-implication",
+          "sourceNoteId": null,
+          "sourceType": "codex-demo",
+          "zh": "这幅图意在说明：耐心投入往往比短暂的热情更有价值。"
+        }
+      ],
+      "id": "we-implication-shows",
+      "kind": "expression",
+      "learningPriority": "must-memorize",
+      "meaningZh": "这幅图意在传达的是：某个中心观点。",
+      "memorizationCue": "What 主语从句 + is that 完整观点；骨架能复用，观点不能偷懒。",
+      "order": 30,
+      "origin": {
+        "label": "原创结构演示，不是真题、官方范文或用户历史数据",
+        "sourceNoteId": null,
+        "sourceType": "codex-demo"
+      },
+      "patternEn": "What the drawing seeks to convey is that [central message].",
+      "relatedPromptIds": [
+        "wp-demo-picture-persistence"
+      ],
+      "relatedTemplateIds": [
+        "wt-demo-picture-growth"
+      ],
+      "relatedTopicIds": [
+        "wi-growth-persistence"
+      ],
+      "slots": [
+        {
+          "examples": [
+            {
+              "en": "consistent action leads to lasting growth",
+              "zh": "持续行动带来持久成长"
+            }
+          ],
+          "grammar": "完整 that 从句",
+          "id": "central-message",
+          "placeholder": "[central message]",
+          "required": true,
+          "zhHint": "中心寓意"
+        }
+      ],
+      "tags": [
+        "big-essay",
+        "picture",
+        "high-reuse",
+        "exam-risk",
+        "demo-content"
+      ],
+      "title": "概括图画中心寓意",
+      "usageConditions": [
+        "已经完成客观描述，并能从材料中提炼出一个清楚、可论证的中心观点。"
+      ],
+      "wordIds": [],
+      "zhSummary": "把图画材料过渡到中心观点，that 从句必须填写由材料能够支持的明确寓意。"
+    },
+    {
+      "alternatives": [
+        {
+          "level": "safe",
+          "note": "信息较少或 with 结构不熟时使用。",
+          "patternEn": "As is shown in the drawing, [person] is [doing something].",
+          "zhHint": "如图所示，某人正在做某事。"
+        }
+      ],
+      "applicationLimits": [
+        "不能用该句式描述图表数字变化。",
+        "不要填写画面中无法确认的原因或心理活动。"
+      ],
+      "category": "picture-description",
+      "commonErrors": [
+        {
+          "correct": "The picture shows a student climbing.",
+          "reasonZh": "show 后使用宾语加现在分词；不要把完整的 is climbing 直接塞在宾语后。",
+          "wrong": "The picture describes a student is climbing."
+        }
+      ],
+      "difficulty": 2,
+      "editorial": {
+        "entryVersion": 1,
+        "generatedBy": {
+          "generatedAt": null,
+          "model": null,
+          "note": "Codex 创建的结构演示内容，仅用于验证数据合同与页面映射，不代表正式教材或事实核查。",
+          "source": "codex"
+        },
+        "publicationStatus": "draft",
+        "sourceNotes": [],
+        "verificationStatus": "unverified"
+      },
+      "examPart": "B",
+      "examples": [
+        {
+          "en": "The drawing depicts a young man reading beside a window, with several notes placed on the desk.",
+          "id": "ex-picture-scene",
+          "sourceNoteId": null,
+          "sourceType": "codex-demo",
+          "zh": "图画描绘了一名年轻人在窗边阅读，桌上放着几张笔记。"
+        }
+      ],
+      "id": "we-picture-scene",
+      "kind": "expression",
+      "learningPriority": "must-memorize",
+      "meaningZh": "图画描绘了某人或某物正在做某事，并带有某个重要细节。",
+      "memorizationCue": "depicts 后先写主体，再用 doing 写动作；with 只补可见细节。",
+      "order": 20,
+      "origin": {
+        "label": "原创结构演示，不是真题、官方范文或用户历史数据",
+        "sourceNoteId": null,
+        "sourceType": "codex-demo"
+      },
+      "patternEn": "The drawing depicts [person or object] doing [action], with [important detail].",
+      "relatedPromptIds": [
+        "wp-demo-picture-persistence"
+      ],
+      "relatedTemplateIds": [
+        "wt-demo-picture-growth"
+      ],
+      "relatedTopicIds": [],
+      "slots": [
+        {
+          "examples": [
+            {
+              "en": "a student climbing a staircase",
+              "zh": "一名学生攀登阶梯"
+            }
+          ],
+          "grammar": "名词短语加现在分词",
+          "id": "subject-action",
+          "placeholder": "[person or object] doing [action]",
+          "required": true,
+          "zhHint": "画面主体与动作"
+        },
+        {
+          "examples": [
+            {
+              "en": "each step marked by a task",
+              "zh": "每一级台阶标着任务"
+            }
+          ],
+          "grammar": "名词短语",
+          "id": "detail",
+          "placeholder": "[important detail]",
+          "required": true,
+          "zhHint": "关键可见细节"
+        }
+      ],
+      "tags": [
+        "big-essay",
+        "picture",
+        "high-reuse",
+        "demo-content"
+      ],
+      "title": "客观描述图画主体与动作",
+      "usageConditions": [
+        "适用于画面主体、动作和关键细节都比较明确的图画描述。"
+      ],
+      "wordIds": [],
+      "zhSummary": "先写肉眼可见的主体和动作，再用 with 补充关键细节，避免一开头就猜人物心理。"
+    },
+    {
+      "applicableTasks": [
+        "坚持、习惯、自律、学习方法、长期目标等主题。"
+      ],
+      "category": "growth-education",
+      "difficulty": 3,
+      "editorial": {
+        "entryVersion": 1,
+        "generatedBy": {
+          "generatedAt": null,
+          "model": null,
+          "note": "Codex 创建的结构演示内容，仅用于验证数据合同与页面映射，不代表正式教材或事实核查。",
+          "source": "codex"
+        },
+        "publicationStatus": "draft",
+        "sourceNotes": [],
+        "verificationStatus": "unverified"
+      },
+      "evidenceExamples": [
+        {
+          "en": "Original example: completing one measurable task each day is easier to sustain than relying on a single last-minute effort.",
+          "id": "evidence-study-plan",
+          "sourceNoteId": null,
+          "sourceType": "codex-demo",
+          "zh": "原创示例：学生每天完成一个可衡量的小任务，比考前一次性突击更容易维持进度。"
+        }
+      ],
+      "examPart": "B",
+      "expressionIds": [
+        "we-implication-shows",
+        "we-cause-twofold",
+        "we-conclusion-action"
+      ],
+      "id": "wi-growth-persistence",
+      "inapplicableCases": [
+        "材料核心是制度公平、公共资源或具体数据比较时，不能只用个人努力解释一切。"
+      ],
+      "kind": "topic",
+      "learningPriority": "must-memorize",
+      "order": 60,
+      "origin": {
+        "label": "原创结构演示，不是真题、官方范文或用户历史数据",
+        "sourceNoteId": null,
+        "sourceType": "codex-demo"
+      },
+      "reasoningChain": [
+        {
+          "en": "Breaking a goal into smaller tasks lowers the mental and practical cost of getting started.",
+          "expressionIds": [
+            "we-cause-twofold"
+          ],
+          "id": "reason-start",
+          "order": 1,
+          "zh": "把目标拆小可以降低开始行动的心理和时间成本。"
+        },
+        {
+          "en": "Repeated action gradually makes progress less dependent on temporary motivation and builds a stable habit.",
+          "expressionIds": [],
+          "id": "reason-habit",
+          "order": 2,
+          "zh": "重复行动让行为逐渐脱离短暂情绪，形成更稳定的习惯。"
+        },
+        {
+          "en": "Completing small tasks provides visible feedback, which in turn supports the next round of action.",
+          "expressionIds": [
+            "we-conclusion-action"
+          ],
+          "id": "reason-feedback",
+          "order": 3,
+          "zh": "持续完成小任务会提供可见反馈，从而支持下一轮行动。"
+        }
+      ],
+      "relatedPromptIds": [
+        "wp-demo-picture-persistence"
+      ],
+      "relatedTemplateIds": [
+        "wt-demo-picture-growth"
+      ],
+      "tags": [
+        "growth-education",
+        "high-reuse",
+        "demo-content"
+      ],
+      "thesisEn": "Long-term growth is usually driven by sustainable small actions rather than an occasional burst of effort.",
+      "thesisZh": "长期成长通常依靠可持续的小行动，而不是偶尔出现的一次猛烈投入。",
+      "title": "持续行动比短暂热情更可靠",
+      "wordIds": [],
+      "zhSummary": "从降低启动压力、形成习惯和积累反馈三个层次论证持续行动的价值。"
+    },
+    {
+      "applicableTasks": [
+        "数字工具、人工智能、社交媒体、在线学习等强调利弊平衡的主题。"
+      ],
+      "category": "technology-life",
+      "difficulty": 3,
+      "editorial": {
+        "entryVersion": 1,
+        "generatedBy": {
+          "generatedAt": null,
+          "model": null,
+          "note": "Codex 创建的结构演示内容，仅用于验证数据合同与页面映射，不代表正式教材或事实核查。",
+          "source": "codex"
+        },
+        "publicationStatus": "draft",
+        "sourceNotes": [],
+        "verificationStatus": "unverified"
+      },
+      "evidenceExamples": [
+        {
+          "en": "Original example: learners may use a phone to find information while disabling unrelated notifications during focused reading.",
+          "id": "evidence-phone",
+          "sourceNoteId": null,
+          "sourceType": "codex-demo",
+          "zh": "原创示例：学习者可以在检索资料时使用手机，同时在深度阅读阶段关闭无关通知。"
+        }
+      ],
+      "examPart": "B",
+      "expressionIds": [
+        "we-cause-twofold",
+        "we-conclusion-action"
+      ],
+      "id": "wi-technology-balance",
+      "inapplicableCases": [
+        "题目明确要求单向赞成或反对某项具体政策时，应先完成题目要求，不能机械写成两面论。"
+      ],
+      "kind": "topic",
+      "learningPriority": "recommended",
+      "order": 70,
+      "origin": {
+        "label": "原创结构演示，不是真题、官方范文或用户历史数据",
+        "sourceNoteId": null,
+        "sourceType": "codex-demo"
+      },
+      "reasoningChain": [
+        {
+          "en": "Digital tools can reduce the cost of accessing information and coordinating with others.",
+          "expressionIds": [
+            "we-cause-twofold"
+          ],
+          "id": "tech-benefit",
+          "order": 1,
+          "zh": "数字工具能够降低信息获取和协作成本。"
+        },
+        {
+          "en": "Without clear boundaries, convenience may turn into distraction or excessive dependence.",
+          "expressionIds": [],
+          "id": "tech-risk",
+          "order": 2,
+          "zh": "如果缺乏边界，便利可能转化为注意力分散或过度依赖。"
+        },
+        {
+          "en": "A more reasonable response is therefore to set rules of use so that tools continue to serve meaningful goals.",
+          "expressionIds": [
+            "we-conclusion-action"
+          ],
+          "id": "tech-balance",
+          "order": 3,
+          "zh": "因此，更合理的方向是建立使用规则，让工具服务于目标。"
+        }
+      ],
+      "relatedPromptIds": [],
+      "relatedTemplateIds": [
+        "wt-demo-picture-growth"
+      ],
+      "tags": [
+        "technology-life",
+        "high-reuse",
+        "demo-content"
+      ],
+      "thesisEn": "The value of technology depends not only on its functions but also on whether users can balance convenience with responsibility.",
+      "thesisZh": "科技的价值不只取决于功能强弱，也取决于使用者能否让便利与责任保持平衡。",
+      "title": "科技便利需要与责任意识平衡",
+      "wordIds": [],
+      "zhSummary": "承认工具带来的效率，同时分析依赖风险，并以合理使用而非简单拒绝作为结论。"
+    },
+    {
+      "commonMistakes": [
+        "把原创练习误写成某年真题。",
+        "只写坚持很重要，却没有解释为什么小行动能够带来长期进步。",
+        "画面描述加入题面没有提供的考试成绩或人物身份。"
+      ],
+      "communicationTask": null,
+      "difficulty": 3,
+      "editorial": {
+        "entryVersion": 1,
+        "generatedBy": {
+          "generatedAt": null,
+          "model": null,
+          "note": "Codex 创建的结构演示内容，仅用于验证数据合同与页面映射，不代表正式教材或事实核查。",
+          "source": "codex"
+        },
+        "publicationStatus": "draft",
+        "sourceNotes": [],
+        "verificationStatus": "unverified"
+      },
+      "examPart": "B",
+      "expressionIds": [
+        "we-picture-scene",
+        "we-implication-shows",
+        "we-cause-twofold",
+        "we-conclusion-action"
+      ],
+      "id": "wp-demo-picture-persistence",
+      "kind": "prompt",
+      "learningPriority": "recommended",
+      "materialForm": "picture",
+      "materialSummaryZh": "原创练习画面：一名学生沿着标有每日小任务的阶梯向上攀登，远处是象征长期目标的终点。",
+      "modelResponse": {
+        "disclaimerZh": "仅用于验证数据结构和阅读布局，不是真题原文、官方范文或用户实绩。",
+        "label": "本系统原创结构演示作文",
+        "paragraphs": [
+          {
+            "commentZh": "第一段只处理可见信息，不虚构题外背景。",
+            "en": "The drawing depicts a student climbing a long staircase, with each step marked by a small daily task. Although the top still seems distant, the path already completed makes the student's progress visible.",
+            "id": "model-p1",
+            "sentences": [
+              {
+                "en": "The drawing depicts a student climbing a long staircase, with each step marked by a small daily task.",
+                "grammarNote": "with each step marked... 是 with 复合结构，marked 与 step 构成被动关系。",
+                "id": "model-p1-s1",
+                "riskNote": "只描述看得见的内容，不补写人物身份或考试结果。",
+                "vocabGlosses": [
+                  {
+                    "meaningZh": "描绘",
+                    "surfaceEn": "depicts"
+                  }
+                ],
+                "whyZh": "先写主体动作，再用 with 结构补充决定寓意的画面细节。",
+                "zh": "图画描绘了一名学生攀登长阶梯的场景，每一级台阶都标有一项小小的每日任务。"
+              },
+              {
+                "en": "Although the top still seems distant, the path already completed makes the student's progress visible.",
+                "grammarNote": "Although 引导让步从句；completed 作后置定语修饰 path。",
+                "id": "model-p1-s2",
+                "riskNote": "画面没有进度痕迹时，不能凭空写 makes progress visible。",
+                "vocabGlosses": [],
+                "whyZh": "用让步关系把‘目标尚远’与‘已有进步’同时写清，为寓意段铺垫。",
+                "zh": "尽管终点仍显遥远，已经走过的路让学生的进步清晰可见。"
+              }
+            ],
+            "zh": "图画描绘了一名学生攀登长阶梯的场景，每一级台阶都标有一项小小的每日任务。尽管终点仍显遥远，已经走过的路让学生的进步清晰可见。"
+          },
+          {
+            "commentZh": "第二段给出中心观点，再用两条相关原因展开。",
+            "en": "What the drawing seeks to convey is that meaningful growth usually results from consistent action rather than a single dramatic effort. Small tasks reduce the pressure of starting, while repeated practice turns temporary motivation into a dependable habit. The visible result of each completed step also encourages people to continue. Moreover, a clear sequence of manageable steps provides timely feedback, allowing learners to adjust their methods before small problems become lasting obstacles.",
+            "id": "model-p2",
+            "sentences": [
+              {
+                "en": "What the drawing seeks to convey is that meaningful growth usually results from consistent action rather than a single dramatic effort.",
+                "grammarNote": "What 从句作主语，that 从句作表语。",
+                "id": "model-p2-s1",
+                "riskNote": "寓意必须由画面推出，不能见到任何动作都套‘坚持’。",
+                "vocabGlosses": [
+                  {
+                    "meaningZh": "源于",
+                    "surfaceEn": "results from"
+                  }
+                ],
+                "whyZh": "直接提出中心寓意，并用 rather than 建立持续行动与短暂冲刺的对比。",
+                "zh": "图画意在说明：有意义的成长通常来自持续行动，而不是某一次声势浩大的努力。"
+              },
+              {
+                "en": "Small tasks reduce the pressure of starting, while repeated practice turns temporary motivation into a dependable habit.",
+                "grammarNote": "while 在此连接两个对照但并行成立的分句。",
+                "id": "model-p2-s2",
+                "riskNote": "不要把两个同义表述伪装成两条原因。",
+                "vocabGlosses": [
+                  {
+                    "meaningZh": "可靠而稳定的习惯",
+                    "surfaceEn": "dependable habit"
+                  }
+                ],
+                "whyZh": "两条原因分工明确：前半解释为何更容易开始，后半解释为何更容易持续。",
+                "zh": "小任务降低了开始行动的压力，而重复练习能把短暂动力转化为可靠习惯。"
+              },
+              {
+                "en": "The visible result of each completed step also encourages people to continue.",
+                "grammarNote": "encourage somebody to do something 表示鼓励某人做某事。",
+                "id": "model-p2-s3",
+                "riskNote": null,
+                "vocabGlosses": [],
+                "whyZh": "补出反馈带来的激励，使原因链从行动延伸到持续行动。",
+                "zh": "每一步完成后产生的可见结果也会鼓励人们继续前进。"
+              },
+              {
+                "en": "Moreover, a clear sequence of manageable steps provides timely feedback, allowing learners to adjust their methods before small problems become lasting obstacles.",
+                "grammarNote": "allowing 引出自然结果；before 引导时间从句。",
+                "id": "model-p2-s4",
+                "riskNote": "若前文没有步骤序列，sequence 的指代会悬空。",
+                "vocabGlosses": [
+                  {
+                    "meaningZh": "可管理的，能力范围内的",
+                    "surfaceEn": "manageable"
+                  }
+                ],
+                "whyZh": "用及时反馈补足方法论价值，比重复说‘坚持很重要’更具体。",
+                "zh": "此外，一系列清楚且可管理的步骤能够提供及时反馈，使学习者在小问题变成长期障碍之前调整方法。"
+              }
+            ],
+            "zh": "图画意在说明：有意义的成长通常来自持续行动，而不是某一次声势浩大的努力。小任务降低了开始行动的压力，而重复练习能把短暂动力转化为可靠习惯。每一步完成后产生的可见结果也会鼓励人们继续前进。此外，一系列清楚且可管理的步骤能够提供及时反馈，使学习者在小问题变成长期障碍之前调整方法。"
+          },
+          {
+            "commentZh": "结尾建议直接回应前文逻辑，并用可替换骨架收束。",
+            "en": "For students, the practical lesson is to divide a distant goal into manageable actions and complete them regularly. Instead of waiting for ideal conditions, they should begin with one concrete task today and review the result before planning the next. Only by valuing such steady effort can we turn ambitious plans into lasting progress.",
+            "id": "model-p3",
+            "sentences": [
+              {
+                "en": "For students, the practical lesson is to divide a distant goal into manageable actions and complete them regularly.",
+                "grammarNote": "to divide 与 complete 共用不定式结构。",
+                "id": "model-p3-s1",
+                "riskNote": "题目受众不是学生时要替换 For students。",
+                "vocabGlosses": [
+                  {
+                    "meaningZh": "切实可行的启示",
+                    "surfaceEn": "practical lesson"
+                  }
+                ],
+                "whyZh": "把前文的抽象结论落到两个平行动作，建议对象和做法都清楚。",
+                "zh": "对学生而言，切实可行的启示是把遥远目标拆分为可管理的行动，并规律完成。"
+              },
+              {
+                "en": "Instead of waiting for ideal conditions, they should begin with one concrete task today and review the result before planning the next.",
+                "grammarNote": "Instead of 和 before 后均接动名词。",
+                "id": "model-p3-s2",
+                "riskNote": "不要把 today 机械搬到需要长期公共措施的题目。",
+                "vocabGlosses": [],
+                "whyZh": "给出可以立刻执行的最小动作，并把复盘接到下一步计划。",
+                "zh": "他们不应等待理想条件，而应从今天的一项具体任务开始，并在规划下一步前复盘结果。"
+              },
+              {
+                "en": "Only by valuing such steady effort can we turn ambitious plans into lasting progress.",
+                "grammarNote": "Only by 置于句首时，主句使用 can we 的部分倒装。",
+                "id": "model-p3-s3",
+                "riskNote": "倒装写不稳时使用普通语序，避免为了高级而失分。",
+                "vocabGlosses": [
+                  {
+                    "meaningZh": "宏大的计划",
+                    "surfaceEn": "ambitious plans"
+                  }
+                ],
+                "whyZh": "用条件倒装回扣中心词 steady effort，结尾有力度且没有引入新论点。",
+                "zh": "只有重视这种稳定投入，我们才能把宏大计划转化为持久进步。"
+              }
+            ],
+            "zh": "对学生而言，切实可行的启示是把遥远目标拆分为可管理的行动，并规律完成。他们不应等待理想条件，而应从今天的一项具体任务开始，并在规划下一步前复盘结果。只有重视这种稳定投入，我们才能把宏大计划转化为持久进步。"
+          }
+        ],
+        "sourceType": "codex-demo",
+        "wordCount": 159
+      },
+      "order": 80,
+      "origin": {
+        "label": "原创结构演示，不是真题、官方范文或用户历史数据",
+        "sourceNoteId": null,
+        "sourceType": "codex-demo"
+      },
+      "outline": [
+        {
+          "contentZh": "学生逐级向上，每级台阶对应一个小任务。",
+          "expressionIds": [
+            "we-picture-scene"
+          ],
+          "functionZh": "描述画面主体、动作和关键细节。",
+          "order": 1,
+          "templateId": "wt-demo-picture-growth"
+        },
+        {
+          "contentZh": "长期成长来自可持续行动；拆小任务降低启动压力并形成习惯。",
+          "expressionIds": [
+            "we-implication-shows",
+            "we-cause-twofold"
+          ],
+          "functionZh": "概括寓意并解释原因。",
+          "order": 2,
+          "templateId": "wt-demo-picture-growth"
+        },
+        {
+          "contentZh": "把远期目标转化为规律可执行的步骤。",
+          "expressionIds": [
+            "we-conclusion-action"
+          ],
+          "functionZh": "提出行动并收束。",
+          "order": 3,
+          "templateId": "wt-demo-picture-growth"
+        }
+      ],
+      "practiceSettings": {
+        "formatChecklist": [
+          "分为三个功能清楚的段落。",
+          "先描述材料，再解释寓意。",
+          "不把训练时长写成官方强制规定。"
+        ],
+        "recommendedMinutes": 35,
+        "targetWordCount": {
+          "max": 190,
+          "min": 140
+        }
+      },
+      "promptCategory": "picture-essay",
+      "relatedTemplateIds": [
+        "wt-demo-picture-growth"
+      ],
+      "source": {
+        "checkedAt": null,
+        "fileName": null,
+        "page": null,
+        "sourceNoteId": null,
+        "sourceType": "codex-demo",
+        "title": "原创结构演示题",
+        "url": null
+      },
+      "tags": [
+        "big-essay",
+        "picture",
+        "growth-education",
+        "demo-content"
+      ],
+      "taskPoints": [
+        {
+          "id": "task-describe",
+          "required": true,
+          "zh": "准确描述人物、阶梯和每日任务标记。"
+        },
+        {
+          "id": "task-interpret",
+          "required": true,
+          "zh": "解释画面所体现的持续行动与长期成长关系。"
+        },
+        {
+          "id": "task-comment",
+          "required": true,
+          "zh": "给出与寓意一致的分析或行动建议。"
+        }
+      ],
+      "title": "原创图画练习：一步一步完成长期目标",
+      "topicIds": [
+        "wi-growth-persistence"
+      ],
+      "verifiedFacts": [],
+      "wordIds": [],
+      "year": null,
+      "zhSummary": "用于验证图画题卡、提纲、关联母版和原创示范的结构；不对应任何年份真题。"
+    },
+    {
+      "applicableTasks": [
+        "画面能够概括出明确行为、品质或社会现象的图画作文",
+        "需要先描述材料，再讨论其含义、原因或建议的三段式写作"
+      ],
+      "article": {
+        "paragraphs": [
+          {
+            "function": "description",
+            "functionZh": "图画描述",
+            "id": "p-description",
+            "order": 1,
+            "sentences": [
+              {
+                "en": "The drawing depicts a student climbing a long staircase, with each step marked by a small daily task.",
+                "expressionIds": [
+                  "we-picture-scene"
+                ],
+                "function": "description",
+                "grammarNote": "with 复合结构补充画面细节；主句先交代可见动作。",
+                "id": "s-picture",
+                "memorizationPriority": "must-memorize",
+                "pitfallZh": "不要把画面没有呈现的人物动机、成绩或结果写成既定事实。",
+                "riskNote": "不得把画面中没有出现的考试结果或人物动机写成事实。",
+                "skeleton": "The drawing depicts [person or object] doing [action], with [important detail].",
+                "slots": [
+                  {
+                    "examples": [
+                      {
+                        "en": "a student climbing a staircase",
+                        "zh": "一名学生攀登阶梯"
+                      }
+                    ],
+                    "grammar": "名词短语加现在分词或其他清楚的动作结构",
+                    "id": "scene",
+                    "placeholder": "[person or object] doing [action]",
+                    "required": true,
+                    "zhHint": "画面主体与动作"
+                  },
+                  {
+                    "examples": [
+                      {
+                        "en": "each step marked by a task",
+                        "zh": "每级台阶标着一项任务"
+                      }
+                    ],
+                    "grammar": "名词短语；避免写无法从画面确认的心理活动",
+                    "id": "detail",
+                    "placeholder": "[important detail]",
+                    "required": true,
+                    "zhHint": "支撑寓意的关键细节"
+                  }
+                ],
+                "variants": [
+                  {
+                    "en": "As is shown in the drawing, a student is moving upward one step at a time.",
+                    "level": "safe",
+                    "note": "信息较少时使用，准确性优先。",
+                    "zh": "如图所示，一名学生正一步一步向上攀登。"
+                  }
+                ],
+                "vocabGlosses": [
+                  {
+                    "meaningZh": "描绘",
+                    "surfaceEn": "depicts",
+                    "usageZh": "用于客观介绍图画内容，主语通常是 drawing、picture 或 cartoon。"
+                  }
+                ],
+                "whyZh": "先交代画面主体与动作，再用 with 结构补充关键细节，一句就完成客观描述。",
+                "zh": "图画描绘了一名学生攀登长阶梯的场景，每一级台阶都标着一项小小的每日任务。"
+              },
+              {
+                "en": "Although the top still seems distant, the growing trail behind the student shows that steady effort has already produced visible progress.",
+                "expressionIds": [],
+                "function": "description",
+                "grammarNote": "Although 引导让步从句，主句给出基于画面细节的有限判断。",
+                "id": "s-contrast",
+                "memorizationPriority": "recommended",
+                "pitfallZh": "若画面没有能够支持‘已经进步’的细节，应删去 already produced visible progress。",
+                "riskNote": "结论应与可见细节相连，避免突然上升到与材料无关的宏大口号。",
+                "skeleton": "Although [difficulty], [visible evidence] shows that [measured conclusion].",
+                "slots": [],
+                "variants": [],
+                "vocabGlosses": [
+                  {
+                    "meaningZh": "持续而稳定的努力",
+                    "surfaceEn": "steady effort"
+                  }
+                ],
+                "whyZh": "让步从句先承认困难，主句再依据可见轨迹作有限判断，描述与寓意衔接自然。",
+                "zh": "尽管终点看起来仍然遥远，学生身后不断延伸的轨迹表明，稳定投入已经带来了看得见的进步。"
+              }
+            ]
+          },
+          {
+            "function": "thesis",
+            "functionZh": "寓意概括与原因分析",
+            "id": "p-analysis",
+            "order": 2,
+            "sentences": [
+              {
+                "en": "What the drawing seeks to convey is that meaningful growth usually results from consistent action rather than a single dramatic effort.",
+                "expressionIds": [
+                  "we-implication-shows"
+                ],
+                "function": "implication",
+                "grammarNote": "What 引导主语从句；表语为 that 从句。",
+                "id": "s-implication",
+                "memorizationPriority": "must-memorize",
+                "pitfallZh": "中心寓意必须能从材料推出，不能把这句当作所有图画题的万能答案。",
+                "riskNote": "不要把该骨架当作任何题目的万能答案，central message 必须由材料推出。",
+                "skeleton": "What the drawing seeks to convey is that [central message].",
+                "slots": [
+                  {
+                    "examples": [
+                      {
+                        "en": "meaningful growth results from consistent action",
+                        "zh": "有意义的成长来自持续行动"
+                      }
+                    ],
+                    "grammar": "完整 that 从句；观点需要可论证，不能只换成一个抽象名词",
+                    "id": "message",
+                    "placeholder": "[central message]",
+                    "required": true,
+                    "zhHint": "与材料直接对应的中心寓意"
+                  }
+                ],
+                "variants": [
+                  {
+                    "en": "The central message embodied in the drawing is that lasting progress is built through disciplined repetition.",
+                    "level": "advanced",
+                    "note": "仅在能稳定写对 embodied 和被动结构时使用。",
+                    "zh": "图画所体现的中心信息是：持久进步建立在有纪律的重复行动之上。"
+                  }
+                ],
+                "vocabGlosses": [
+                  {
+                    "meaningZh": "源于，由……造成",
+                    "surfaceEn": "results from",
+                    "usageZh": "result from 后接原因；result in 后接结果。"
+                  }
+                ],
+                "whyZh": "用 What 主语从句明确切换到寓意，再用 rather than 建立核心对比。",
+                "zh": "这幅图意在说明：有意义的成长通常来自持续行动，而不是某一次声势浩大的努力。"
+              },
+              {
+                "en": "The reasons behind this pattern are twofold: small tasks reduce the pressure of starting, and repeated practice turns temporary motivation into a reliable habit.",
+                "expressionIds": [
+                  "we-cause-twofold"
+                ],
+                "function": "cause",
+                "grammarNote": "冒号后使用两个平行分句，twofold 必须确实对应两条原因。",
+                "id": "s-cause",
+                "memorizationPriority": "must-memorize",
+                "pitfallZh": "只有一条原因时不能写 twofold；两个分句也不能只是同一意思换词重复。",
+                "riskNote": "原因数量和句式承诺必须一致；只有一条原因时不要写 twofold。",
+                "skeleton": "The reasons behind [phenomenon] are twofold: [reason one], and [reason two].",
+                "slots": [
+                  {
+                    "examples": [
+                      {
+                        "en": "this pattern",
+                        "zh": "这一规律"
+                      }
+                    ],
+                    "grammar": "名词短语，指代必须清楚",
+                    "id": "phenomenon",
+                    "placeholder": "[phenomenon]",
+                    "required": true,
+                    "zhHint": "需要解释的现象"
+                  },
+                  {
+                    "examples": [
+                      {
+                        "en": "small tasks reduce the pressure of starting",
+                        "zh": "小任务降低开始压力"
+                      }
+                    ],
+                    "grammar": "完整分句，并与第二条保持平行",
+                    "id": "reason-one",
+                    "placeholder": "[reason one]",
+                    "required": true,
+                    "zhHint": "第一条原因"
+                  },
+                  {
+                    "examples": [
+                      {
+                        "en": "repeated practice builds a reliable habit",
+                        "zh": "重复练习建立可靠习惯"
+                      }
+                    ],
+                    "grammar": "完整分句，并与第一条保持平行",
+                    "id": "reason-two",
+                    "placeholder": "[reason two]",
+                    "required": true,
+                    "zhHint": "第二条原因"
+                  }
+                ],
+                "variants": [],
+                "vocabGlosses": [
+                  {
+                    "meaningZh": "有两方面的",
+                    "surfaceEn": "twofold"
+                  }
+                ],
+                "whyZh": "twofold 先承诺两条原因，冒号后用两个平行分句兑现，逻辑数量清楚。",
+                "zh": "这一规律背后的原因有两点：小任务降低了开始行动的压力，而重复练习能把短暂动力转化为可靠习惯。"
+              },
+              {
+                "en": "Moreover, a clear sequence of manageable steps provides timely feedback, allowing learners to adjust their methods before small problems become lasting obstacles.",
+                "expressionIds": [],
+                "function": "effect",
+                "grammarNote": "现在分词 allowing 补充说明前句结果；before 引导时间从句。",
+                "id": "s-feedback",
+                "memorizationPriority": "recommended",
+                "pitfallZh": "若前文没有明确的步骤或过程，sequence 会失去指代基础。",
+                "riskNote": "只有前文已经说明具体步骤时，才能自然使用 this sequence 或同类指代。",
+                "skeleton": "Moreover, [method] provides [benefit], allowing [group] to [action] before [risk].",
+                "slots": [],
+                "variants": [],
+                "vocabGlosses": [
+                  {
+                    "meaningZh": "可应付的，可管理的",
+                    "surfaceEn": "manageable",
+                    "usageZh": "这里修饰 steps，强调任务规模在能力范围内。"
+                  }
+                ],
+                "whyZh": "在前两条原因后补充反馈机制，使论证从‘容易开始’推进到‘能够持续调整’。",
+                "zh": "此外，一系列清楚且可管理的步骤能够提供及时反馈，使学习者在小问题变成长期障碍之前调整方法。"
+              }
+            ]
+          },
+          {
+            "function": "conclusion",
+            "functionZh": "行动建议与总结",
+            "id": "p-conclusion",
+            "order": 3,
+            "sentences": [
+              {
+                "en": "For students, the practical lesson is to divide a distant goal into manageable actions and complete them on a regular basis.",
+                "expressionIds": [],
+                "function": "suggestion",
+                "grammarNote": "两个不定式动作共享 to，语义上保持并列。",
+                "id": "s-action",
+                "memorizationPriority": "recommended",
+                "pitfallZh": "受众不是学生时，应替换 For students，不能无条件照搬。",
+                "riskNote": "建议必须回应前文原因，不能突然加入无关政策或科技措施。",
+                "skeleton": "For [group], the practical lesson is to [action one] and [action two].",
+                "slots": [],
+                "variants": [],
+                "vocabGlosses": [
+                  {
+                    "meaningZh": "定期地，规律地",
+                    "surfaceEn": "on a regular basis"
+                  }
+                ],
+                "whyZh": "把抽象品质转成两个可执行动作，使结尾真正回应前文原因。",
+                "zh": "对学生而言，切实可行的启示是把遥远目标拆分为可管理的行动，并定期完成它们。"
+              },
+              {
+                "en": "Instead of waiting for ideal conditions, they should begin with one concrete task today and review the result before planning the next.",
+                "expressionIds": [],
+                "function": "suggestion",
+                "grammarNote": "Instead of 后接动名词；begin 和 review 由 should 统领并保持平行。",
+                "id": "s-begin",
+                "memorizationPriority": "recommended",
+                "pitfallZh": "不要把 today 等时间词机械套进要求长期政策或群体措施的题目。",
+                "riskNote": "行动建议应具体但仍适用于材料，不要擅自加入题目没有要求的机构或政策。",
+                "skeleton": "Instead of waiting for [condition], [group] should begin with [action] and review [result] before [next step].",
+                "slots": [],
+                "variants": [],
+                "vocabGlosses": [
+                  {
+                    "meaningZh": "而不是，代替",
+                    "surfaceEn": "Instead of",
+                    "usageZh": "of 后接名词或动名词。"
+                  }
+                ],
+                "whyZh": "Instead of 先排除拖延，再给出‘行动—复盘—下一步’的小闭环，建议具体而不空泛。",
+                "zh": "他们不应等待理想条件，而应从今天的一项具体任务开始，并在规划下一步前复盘结果。"
+              },
+              {
+                "en": "Only by valuing such steady effort can we turn ambitious plans into lasting progress.",
+                "expressionIds": [
+                  "we-conclusion-action"
+                ],
+                "function": "conclusion",
+                "grammarNote": "Only by 置于句首时主句使用部分倒装：can we，而不是 we can。",
+                "id": "s-conclusion",
+                "memorizationPriority": "must-memorize",
+                "pitfallZh": "倒装掌握不稳时改用 By doing..., we can...，正确比炫技重要。",
+                "riskNote": "高级结构写不稳时应改用普通语序，不为倒装牺牲正确性。",
+                "skeleton": "Only by [action] can we [positive result].",
+                "slots": [
+                  {
+                    "examples": [
+                      {
+                        "en": "valuing steady effort",
+                        "zh": "重视稳定投入"
+                      }
+                    ],
+                    "grammar": "by 后接动名词或名词短语",
+                    "id": "action",
+                    "placeholder": "[action]",
+                    "required": true,
+                    "zhHint": "实现目标所需的具体行动"
+                  },
+                  {
+                    "examples": [
+                      {
+                        "en": "turn plans into progress",
+                        "zh": "把计划转化为进步"
+                      }
+                    ],
+                    "grammar": "动词原形开头的谓语部分",
+                    "id": "result",
+                    "placeholder": "[positive result]",
+                    "required": true,
+                    "zhHint": "与主题对应的积极结果"
+                  }
+                ],
+                "variants": [],
+                "vocabGlosses": [
+                  {
+                    "meaningZh": "只有通过……",
+                    "surfaceEn": "Only by",
+                    "usageZh": "置于句首时，主句使用部分倒装。"
+                  }
+                ],
+                "whyZh": "用 Only by 条件倒装压缩全文逻辑，形成有力度但仍与主题一致的收束。",
+                "zh": "只有重视这种稳定投入，我们才能把宏大计划转化为持久进步。"
+              }
+            ]
+          }
+        ],
+        "titleEn": "Small Steps and Lasting Progress",
+        "titleZh": "小步行动与持续进步"
+      },
+      "difficulty": 3,
+      "editorial": {
+        "entryVersion": 1,
+        "generatedBy": {
+          "generatedAt": null,
+          "model": null,
+          "note": "Codex 创建的结构演示内容，仅用于验证数据合同与页面映射，不代表正式教材或事实核查。",
+          "source": "codex"
+        },
+        "publicationStatus": "draft",
+        "sourceNotes": [],
+        "verificationStatus": "unverified"
+      },
+      "examPart": "B",
+      "id": "wt-demo-picture-growth",
+      "inapplicableTasks": [
+        "主要任务是比较精确数据的图表题",
+        "要求完成邀请、通知或回复等具体交际任务的应用文"
+      ],
+      "kind": "template",
+      "learningPriority": "must-memorize",
+      "materialForms": [
+        "picture"
+      ],
+      "migrationExamples": [
+        {
+          "adaptations": [
+            {
+              "en": "What the drawing seeks to convey is that broad knowledge is accumulated through regular reading rather than occasional enthusiasm.",
+              "note": "替换观点时仍要确认图画确实呈现阅读与积累。",
+              "sentenceId": "s-implication",
+              "zh": "这幅图意在说明：广博知识来自规律阅读，而不是偶尔的热情。"
+            }
+          ],
+          "id": "migration-reading",
+          "summaryZh": "保留“持续行动产生积累”的逻辑，只替换画面主体和中心寓意。",
+          "topicZh": "长期阅读习惯"
+        }
+      ],
+      "order": 10,
+      "origin": {
+        "label": "原创结构演示，不是真题、官方范文或用户历史数据",
+        "sourceNoteId": null,
+        "sourceType": "codex-demo"
+      },
+      "relatedPromptIds": [
+        "wp-demo-picture-persistence"
+      ],
+      "structureMap": [
+        {
+          "goalZh": "客观写清人物、动作和对比，不抢先堆砌空泛评价。",
+          "id": "map-description",
+          "label": "第一段：图画描述",
+          "order": 1,
+          "paragraphId": "p-description"
+        },
+        {
+          "goalZh": "提炼中心观点，并用一条清楚的因果链展开。",
+          "id": "map-analysis",
+          "label": "第二段：寓意与分析",
+          "order": 2,
+          "paragraphId": "p-analysis"
+        },
+        {
+          "goalZh": "提出与主题直接对应的可执行行动，并收束全文。",
+          "id": "map-conclusion",
+          "label": "第三段：行动与总结",
+          "order": 3,
+          "paragraphId": "p-conclusion"
+        }
+      ],
+      "tags": [
+        "big-essay",
+        "picture",
+        "structure",
+        "high-reuse",
+        "demo-content"
+      ],
+      "targetWordCount": {
+        "max": 190,
+        "min": 140
+      },
+      "templateCategory": "big-picture",
+      "title": "图画大作文三段式演示母版",
+      "wordIds": [],
+      "zhSummary": "用“描述画面—解释寓意与原因—提出行动”组织图画类大作文。内容为原创结构演示，不对应任何年份真题。"
+    }
+  ],
+  "generatedAt": null,
+  "index": {
+    "expressionIds": [
+      "we-cause-twofold",
+      "we-conclusion-action",
+      "we-implication-shows",
+      "we-picture-scene"
+    ],
+    "promptIds": [
+      "wp-demo-picture-persistence"
+    ],
+    "templateIds": [
+      "wt-demo-picture-growth"
+    ],
+    "topicIds": [
+      "wi-growth-persistence",
+      "wi-technology-balance"
+    ]
+  },
+  "schemaVersion": 1,
+  "writingContentVersion": 0
+}

@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#263238">
+  <meta name="description" content="百草园个人难词学习模块。">
+  <title>单词｜百草园</title>
+  <link rel="manifest" href="../manifest.webmanifest">
+  <link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/css/vocabulary.css">
+</head>
+<body>
+  <header class="vocab-bar">
+    <a class="vocab-brand" href="../">百草园</a>
+    <nav aria-label="应用主功能"><a href="../writing/part-b/">写作</a><a class="active" href="./" aria-current="page">单词</a></nav>
+  </header>
+  <main class="vocab-main">
+    <p class="kicker">VOCABULARY · ANDROID FIRST</p>
+    <h1>只收那些反复背不住的词。</h1>
+    <p class="lead">单词合同、GPT 批次导入和构建工具已经保留；正式单词数据尚未交付，所以这里不拿随机词条假装产品很充实。下一批数据到位后，将接入搜索、展开详情、谐音与词根助记、形近词辨析和三档复习状态。</p>
+    <section class="status-card"><span>当前状态</span><strong>等待首批难词 JSON</strong><p>作文模块的开发和主题切换不会修改单词 Schema，也不会覆盖未来的复习进度。</p></section>
+    <div class="feature-grid"><article><b>01</b><h2>全面理解</h2><p>核心义、熟词僻义、词根、词族和搭配。</p></article><article><b>02</b><h2>记忆辅助</h2><p>谐音、联想与个人助记分开标注，不冒充词源。</p></article><article><b>03</b><h2>横向辨析</h2><p>形近词、近义词、反义词和考试陷阱。</p></article></div>
+    <a class="back-writing" href="../writing/part-b/">返回写作学习</a>
+  </main>
+  <script>
+    if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("../sw.js", { scope: "../" }).catch(() => {});
+  </script>
+</body>
+</html>

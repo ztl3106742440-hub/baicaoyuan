@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 460" role="img" aria-labelledby="title desc">
+  <title id="title">报纸铜版画风格数据图</title>
+  <desc id="desc">黑白红三色的柱状图、趋势线和编辑标记。</desc>
+  <defs>
+    <pattern id="dots" width="8" height="8" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.25" fill="#242522" opacity=".65"/>
+    </pattern>
+    <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <path d="M0 0V8" stroke="#242522" stroke-width="1.2"/>
+    </pattern>
+  </defs>
+  <rect x="18" y="18" width="604" height="424" fill="#e8e2d5" stroke="#262622" stroke-width="4"/>
+  <path d="M35 48h570M35 414h570" stroke="#262622" stroke-width="3"/>
+  <text x="320" y="40" text-anchor="middle" font-family="Georgia,serif" font-size="15" font-weight="700" letter-spacing="4">DATA REVIEW · FIGURE 01</text>
+  <path d="M93 368V92m0 276h468" fill="none" stroke="#2d2e2a" stroke-width="4"/>
+  <g stroke="#2d2e2a" stroke-width="2.5">
+    <rect x="143" y="195" width="76" height="173" fill="url(#hatch)"/>
+    <rect x="281" y="144" width="76" height="224" fill="url(#dots)"/>
+    <rect x="419" y="232" width="76" height="136" fill="#36403d"/>
+  </g>
+  <path d="M118 122l65-39 93 12 73-51 88 45 102-39" fill="none" stroke="#7e2928" stroke-width="5" stroke-dasharray="10 7"/>
+  <g fill="#2c2d29" font-family="Georgia,serif" font-size="17" font-weight="700">
+    <text x="181" y="397" text-anchor="middle">I</text>
+    <text x="319" y="397" text-anchor="middle">II</text>
+    <text x="457" y="397" text-anchor="middle">III</text>
+    <text x="53" y="94">%</text>
+  </g>
+  <rect x="43" y="67" width="188" height="35" fill="#e8e2d5"/>
+  <text x="55" y="90" font-family="Georgia,serif" font-size="17" font-weight="700">WRITING / EVIDENCE</text>
+  <circle cx="538" cy="86" r="34" fill="none" stroke="#7e2928" stroke-width="4"/>
+  <path d="M516 86h44M538 64v44" stroke="#7e2928" stroke-width="3"/>
+</svg>

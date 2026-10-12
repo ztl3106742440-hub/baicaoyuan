@@ -1,0 +1,20 @@
+{
+  "appVersion": "0.2.0",
+  "cacheVersion": "writing-0.2.0-843cb1766272e81d",
+  "generatedAt": "2026-10-11T00:00:00+08:00",
+  "mode": "preview",
+  "schemaVersion": 1,
+  "writingContentVersion": 1,
+  "writingData": {
+    "bytes": 472905,
+    "entryCount": 80,
+    "kindCounts": {
+      "expression": 40,
+      "prompt": 16,
+      "template": 7,
+      "topic": 17
+    },
+    "sha256": "843cb1766272e81ded56d8038c92a78aba317b138a780049d75c8a45a6dc3405",
+    "url": "data/writing.preview.843cb1766272e81ded56d8038c92a78aba317b138a780049d75c8a45a6dc3405.json"
+  }
+}

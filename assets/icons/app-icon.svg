@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title description">
+  <title id="title">百草园应用图标</title>
+  <desc id="description">三片相扣的镂空叶环围绕一颗种子，象征写作、词汇与练习共同生长。</desc>
+  <rect width="512" height="512" rx="112" fill="#29463a"/>
+  <g fill="none" stroke="#f5f0df" stroke-width="34" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M256 92c-63 25-91 87-64 143 13 27 36 49 64 65 28-16 51-38 64-65 27-56-1-118-64-143Z"/>
+    <path d="M102 289c34-62 97-82 147-50 27 17 44 43 49 73-21 29-46 50-77 61-59 20-112-17-119-84Z"/>
+    <path d="M410 289c-34-62-97-82-147-50-27 17-44 43-49 73 21 29 46 50 77 61 59 20 112-17 119-84Z"/>
+  </g>
+  <circle cx="256" cy="292" r="42" fill="#29463a"/>
+  <circle cx="256" cy="292" r="21" fill="#d5a66f"/>
+</svg>
