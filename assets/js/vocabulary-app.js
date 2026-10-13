@@ -1,5 +1,10 @@
-import { getWordProgress, listWordProgress, saveWordProgress } from "./storage.js";
+import { listWordProgress, saveWordProgress } from "./storage.js";
 import { loadVocabularyData, searchTextForWord } from "./vocabulary-data.js";
+
+const PAGE_SIZE = 30;
+const viewValues = new Set(["study", "library"]);
+const filterValues = new Set(["all", "unrated", "unknown", "unstable", "known", "starred"]);
+const urlParameters = new URLSearchParams(location.search);
 
 const tagLabels = {
   "high-priority": "考研重点",
@@ -29,22 +34,60 @@ const ratingLabels = {
   known: "认识",
 };
 
+function storedView() {
+  try { return localStorage.getItem("kaoyan.vocabulary.view"); } catch { return null; }
+}
+
+function storedSessionSize() {
+  try {
+    const value = Number.parseInt(localStorage.getItem("kaoyan.vocabulary.sessionSize") ?? "20", 10);
+    return [10, 20, 30].includes(value) ? value : 20;
+  } catch {
+    return 20;
+  }
+}
+
+const requestedView = urlParameters.get("view") ?? storedView();
+const requestedFilter = urlParameters.get("filter");
+const requestedPage = Number.parseInt(urlParameters.get("page") ?? "1", 10);
 const state = {
   words: [],
   progress: new Map(),
-  query: "",
-  filter: "all",
+  query: urlParameters.get("q") ?? "",
+  filter: filterValues.has(requestedFilter) ? requestedFilter : "all",
+  page: Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1,
+  view: viewValues.has(requestedView) ? requestedView : "study",
   version: null,
   mode: null,
+  sessionSize: storedSessionSize(),
+  sessionWords: [],
+  studyIndex: 0,
+  studyRevealed: false,
+  studyPoolIds: null,
+  roundResults: { unknown: 0, unstable: 0, known: 0 },
 };
 
 const elements = {
+  shell: document.querySelector("#vocabShell"),
+  shade: document.querySelector("#drawerShade"),
   count: document.querySelector("#wordCount"),
   filterBar: document.querySelector("#wordFilters"),
   list: document.querySelector("#wordList"),
   loading: document.querySelector("#wordLoading"),
   search: document.querySelector("#wordSearch"),
   status: document.querySelector("#vocabularyStatus"),
+  studyView: document.querySelector("#studyView"),
+  libraryView: document.querySelector("#libraryView"),
+  studyStage: document.querySelector("#studyStage"),
+  studyProgressText: document.querySelector("#studyProgressText"),
+  studyRoundStatus: document.querySelector("#studyRoundStatus"),
+  studyProgressBar: document.querySelector("#studyProgressBar"),
+  sessionSize: document.querySelector("#sessionSize"),
+  topPagination: document.querySelector("#topPagination"),
+  bottomPagination: document.querySelector("#bottomPagination"),
+  sideTotal: document.querySelector("#sideTotal"),
+  sidePending: document.querySelector("#sidePending"),
+  sideKnown: document.querySelector("#sideKnown"),
 };
 
 function node(tagName, className, text) {
@@ -142,14 +185,9 @@ function renderMorphology(word) {
     || Boolean(morphology.etymologyNote);
   if (!hasContent) return null;
   const wrapper = section("构词与拆分", "morphology");
-  const confidence = badge(`置信度：${morphology.confidence}`, "confidence");
-  wrapper.append(confidence);
-  for (const root of morphology.verifiedRoots) {
-    wrapper.append(node("p", "morph-line", `${root.form} · ${root.role} · ${root.meaning}`));
-  }
-  for (const affix of morphology.affixes) {
-    wrapper.append(node("p", "morph-line", `${affix.form} · ${affix.kind} · ${affix.meaning}`));
-  }
+  wrapper.append(badge(`置信度：${morphology.confidence}`, "confidence"));
+  for (const root of morphology.verifiedRoots) wrapper.append(node("p", "morph-line", `${root.form} · ${root.role} · ${root.meaning}`));
+  for (const affix of morphology.affixes) wrapper.append(node("p", "morph-line", `${affix.form} · ${affix.kind} · ${affix.meaning}`));
   if (morphology.etymologyNote) wrapper.append(node("p", "plain-note", morphology.etymologyNote));
   for (const split of morphology.mnemonicSplit) {
     const item = node("article", "mnemonic-split");
@@ -220,8 +258,7 @@ function renderCollocations(word) {
   const list = node("div", "collocation-list");
   for (const item of word.collocations) {
     const row = node("article", `collocation-item${item.showInQuick ? " quick" : ""}`);
-    const phrase = node("strong", null, item.phrase);
-    row.append(phrase, node("span", null, item.zh));
+    row.append(node("strong", null, item.phrase), node("span", null, item.zh));
     if (item.showInQuick) row.append(badge("速记", "quick-label"));
     list.append(row);
   }
@@ -254,7 +291,7 @@ function renderDetails(word) {
   const core = node("section", "core-sense");
   core.append(node("span", null, "核心感觉"), node("p", null, word.coreSense));
   body.append(core);
-  const sections = [
+  body.append(...[
     renderSenses(word),
     renderMemory(word),
     renderMorphology(word),
@@ -265,10 +302,8 @@ function renderDetails(word) {
     renderCollocations(word),
     renderExamples(word),
     renderTraps(word),
-  ].filter(Boolean);
-  body.append(...sections);
-  const editorial = node("p", "editorial-note", `内容状态：${word.editorial.publicationStatus} · ${word.editorial.verificationStatus} · 词条版本 ${word.editorial.entryVersion}`);
-  body.append(editorial);
+  ].filter(Boolean));
+  body.append(node("p", "editorial-note", `内容状态：${word.editorial.publicationStatus} · ${word.editorial.verificationStatus} · 词条版本 ${word.editorial.entryVersion}`));
   return body;
 }
 
@@ -285,15 +320,19 @@ async function rateWord(wordId, rating) {
     reviewCount: (current.reviewCount ?? 0) + 1,
     markedDifficult: rating === "unknown" ? true : current.markedDifficult ?? false,
   });
-  state.progress.set(wordId, record);
-  render();
+  if (record) state.progress.set(wordId, record);
+  renderSideStats();
+  updateFilterCounts();
+  return record;
 }
 
 async function toggleStar(wordId) {
   const current = progressFor(wordId);
   const record = await saveWordProgress(wordId, { starred: !current.starred });
-  state.progress.set(wordId, record);
-  render();
+  if (record) state.progress.set(wordId, record);
+  renderSideStats();
+  updateFilterCounts();
+  return record;
 }
 
 function renderActions(word) {
@@ -306,13 +345,19 @@ function renderActions(word) {
     button.type = "button";
     button.dataset.rating = rating;
     button.setAttribute("aria-pressed", String(current.lastRating === rating));
-    button.addEventListener("click", () => rateWord(word.id, rating));
+    button.addEventListener("click", async () => {
+      await rateWord(word.id, rating);
+      renderLibrary();
+    });
     ratingGroup.append(button);
   }
   const star = node("button", "star-button", current.starred ? "★ 已收藏" : "☆ 收藏");
   star.type = "button";
   star.setAttribute("aria-pressed", String(Boolean(current.starred)));
-  star.addEventListener("click", () => toggleStar(word.id));
+  star.addEventListener("click", async () => {
+    await toggleStar(word.id);
+    renderLibrary();
+  });
   wrapper.append(ratingGroup, star);
   return wrapper;
 }
@@ -325,17 +370,12 @@ function renderWord(word) {
   const header = node("div", "word-heading");
   const title = node("div", "word-title");
   title.append(node("h2", null, word.word), node("p", "phonetic", phonetic(word)));
-  const priority = node("div", "word-priority", `P${word.examPriority} · 难度 ${word.difficulty}`);
-  header.append(title, priority);
+  header.append(title, node("div", "word-priority", `P${word.examPriority} · 难度 ${word.difficulty}`));
+  const copy = node("div", "word-summary-copy");
+  copy.append(node("p", "primary-meaning", primaryMeaning(word)), node("p", "recall-line", word.recallLine));
   const tags = node("div", "word-tags");
-  for (const tag of word.tags) tags.append(badge(tagLabels[tag] ?? tag));
-  summary.append(
-    header,
-    node("p", "primary-meaning", primaryMeaning(word)),
-    node("p", "recall-line", word.recallLine),
-    tags,
-    node("span", "expand-hint", "展开完整词条"),
-  );
+  for (const tag of word.tags.slice(0, 3)) tags.append(badge(tagLabels[tag] ?? tag));
+  summary.append(header, copy, tags, node("span", "expand-hint", "展开完整词条"));
   details.append(summary, renderDetails(word));
   article.append(details, renderActions(word));
   return article;
@@ -354,6 +394,19 @@ function visibleWords() {
   return state.words.filter((word) => matchesFilter(word) && (!query || searchTextForWord(word).includes(query)));
 }
 
+function pageCount(total) {
+  return Math.max(1, Math.ceil(total / PAGE_SIZE));
+}
+
+function updateUrl() {
+  const parameters = new URLSearchParams();
+  parameters.set("view", state.view);
+  if (state.view === "library" && state.page > 1) parameters.set("page", String(state.page));
+  if (state.filter !== "all") parameters.set("filter", state.filter);
+  if (state.query.trim()) parameters.set("q", state.query.trim());
+  history.replaceState(null, "", `${location.pathname}?${parameters.toString()}${location.hash}`);
+}
+
 function updateFilterCounts() {
   for (const button of elements.filterBar.querySelectorAll("button[data-filter]")) {
     const filter = button.dataset.filter;
@@ -369,47 +422,336 @@ function updateFilterCounts() {
   }
 }
 
-function render() {
+function renderSideStats() {
+  const known = state.words.filter((word) => progressFor(word.id).lastRating === "known").length;
+  elements.sideTotal.textContent = String(state.words.length);
+  elements.sideKnown.textContent = String(known);
+  elements.sidePending.textContent = String(state.words.length - known);
+}
+
+function scrollLibraryTop() {
+  document.querySelector("#libraryTitle")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function renderPagination(container, total) {
+  const pages = pageCount(total);
+  const previous = node("button", null, "上一页");
+  previous.type = "button";
+  previous.disabled = state.page <= 1;
+  previous.addEventListener("click", () => {
+    state.page = Math.max(1, state.page - 1);
+    updateUrl();
+    renderLibrary();
+    scrollLibraryTop();
+  });
+  const label = node("span", null, `第 ${state.page} / ${pages} 页`);
+  const next = node("button", null, "下一页");
+  next.type = "button";
+  next.disabled = state.page >= pages;
+  next.addEventListener("click", () => {
+    state.page = Math.min(pages, state.page + 1);
+    updateUrl();
+    renderLibrary();
+    scrollLibraryTop();
+  });
+  for (const button of [previous, next]) button.addEventListener("dblclick", scrollLibraryTop);
+  container.replaceChildren(previous, label, next);
+}
+
+function renderLibrary() {
   const words = visibleWords();
-  elements.list.replaceChildren(...words.map(renderWord));
-  elements.count.textContent = `显示 ${words.length} / ${state.words.length} 个词`;
+  const pages = pageCount(words.length);
+  state.page = Math.min(Math.max(1, state.page), pages);
+  const start = (state.page - 1) * PAGE_SIZE;
+  const current = words.slice(start, start + PAGE_SIZE);
+  elements.list.replaceChildren(...current.map(renderWord));
+  const rangeStart = current.length === 0 ? 0 : start + 1;
+  const rangeEnd = start + current.length;
+  elements.count.textContent = `第 ${rangeStart}–${rangeEnd} 个，共 ${words.length} 个词；每页最多 ${PAGE_SIZE} 个`;
   updateFilterCounts();
-  elements.loading.hidden = words.length > 0;
+  renderPagination(elements.topPagination, words.length);
+  renderPagination(elements.bottomPagination, words.length);
+  elements.loading.hidden = current.length > 0;
   if (state.words.length === 0) elements.loading.textContent = "当前词库还没有可显示的词条。";
-  else if (words.length === 0) elements.loading.textContent = "没有匹配的词。换个关键词或筛选条件试试。";
+  else if (words.length === 0) elements.loading.textContent = "没有匹配的词。请调整筛选条件。";
+}
+
+function studyPriority(word) {
+  const rating = progressFor(word.id).lastRating;
+  return ({ unknown: 0, unstable: 1, null: 2, known: 3 })[String(rating)] ?? 2;
+}
+
+function candidateStudyWords() {
+  const allowed = state.studyPoolIds ? new Set(state.studyPoolIds) : null;
+  return state.words
+    .filter((word) => !allowed || allowed.has(word.id))
+    .map((word, index) => ({ word, index }))
+    .sort((left, right) => studyPriority(left.word) - studyPriority(right.word) || left.index - right.index)
+    .map(({ word }) => word);
+}
+
+function startStudySession() {
+  state.sessionWords = candidateStudyWords().slice(0, state.sessionSize);
+  state.studyIndex = 0;
+  state.studyRevealed = false;
+  state.roundResults = { unknown: 0, unstable: 0, known: 0 };
+  renderStudy();
+}
+
+function primaryMemoryHook(word) {
+  return word.memoryHooks.find((hook) => hook.isPrimary) ?? word.memoryHooks[0] ?? null;
+}
+
+function renderStudyAnswer(word) {
+  const answer = node("div", "study-answer");
+  const main = node("section", "study-answer-main");
+  main.append(node("strong", null, primaryMeaning(word)), node("p", null, word.coreSense));
+  answer.append(main);
+  const ratings = node("div", "study-rating");
+  ratings.setAttribute("aria-label", `${word.word} 掌握程度`);
+  for (const [rating, label] of Object.entries(ratingLabels)) {
+    const button = node("button", null, label);
+    button.type = "button";
+    button.dataset.rating = rating;
+    button.addEventListener("click", async () => {
+      button.disabled = true;
+      await rateWord(word.id, rating);
+      state.roundResults[rating] += 1;
+      state.studyIndex += 1;
+      state.studyRevealed = false;
+      renderStudy();
+      renderLibrary();
+    });
+    ratings.append(button);
+  }
+  answer.append(ratings);
+  const hook = primaryMemoryHook(word);
+  if (hook) {
+    const memory = node("section", "study-memory");
+    memory.append(node("span", null, hookLabels[hook.type] ?? "主助记"), node("strong", null, hook.title), node("p", null, hook.content));
+    answer.append(memory);
+  }
+  const quickItems = word.collocations.filter((item) => item.showInQuick).slice(0, 3);
+  const fallbackItems = quickItems.length > 0 ? quickItems : word.collocations.slice(0, 2);
+  if (fallbackItems.length > 0) {
+    const collocations = node("div", "quick-collocations");
+    for (const item of fallbackItems) collocations.append(node("span", null, `${item.phrase} · ${item.zh}`));
+    answer.append(collocations);
+  }
+  const deep = node("details", "study-deep");
+  deep.append(node("summary", null, "查看完整词条"), renderDetails(word));
+  answer.append(deep);
+  return answer;
+}
+
+function renderSessionFinished() {
+  const wrapper = node("section", "session-finished");
+  const body = node("div");
+  body.append(
+    node("h2", null, "本轮完成"),
+    node("p", null, `不会 ${state.roundResults.unknown} · 模糊 ${state.roundResults.unstable} · 认识 ${state.roundResults.known}`),
+  );
+  const restart = node("button", null, "再来一轮");
+  restart.type = "button";
+  restart.addEventListener("click", startStudySession);
+  body.append(restart);
+  wrapper.append(body);
+  return wrapper;
+}
+
+function renderStudy() {
+  elements.studyStage.setAttribute("aria-busy", "false");
+  const total = state.sessionWords.length;
+  const completed = Math.min(state.studyIndex, total);
+  elements.studyProgressText.textContent = total === 0 ? "当前没有可学习的单词" : `本轮 ${completed} / ${total}`;
+  elements.studyRoundStatus.textContent = total === 0 ? "空词库" : completed >= total ? "已完成" : `${total - completed} 词待学习`;
+  elements.studyProgressBar.style.width = `${total === 0 ? 0 : (completed / total) * 100}%`;
+  if (total === 0) {
+    elements.studyStage.replaceChildren(node("p", "loading-state", "当前筛选没有可学习的单词。请到单词库调整筛选。"));
+    return;
+  }
+  if (state.studyIndex >= total) {
+    elements.studyStage.replaceChildren(renderSessionFinished());
+    return;
+  }
+  const word = state.sessionWords[state.studyIndex];
+  const card = node("article", "study-card");
+  const top = node("header", "study-card-top");
+  top.append(node("span", "study-sequence", `第 ${state.studyIndex + 1} / ${total} 个`));
+  const currentProgress = progressFor(word.id);
+  const star = node("button", "study-star", currentProgress.starred ? "★" : "☆");
+  star.type = "button";
+  star.setAttribute("aria-label", currentProgress.starred ? "取消收藏" : "收藏单词");
+  star.setAttribute("aria-pressed", String(Boolean(currentProgress.starred)));
+  star.addEventListener("click", async () => {
+    await toggleStar(word.id);
+    renderStudy();
+  });
+  top.append(star);
+  const prompt = node("section", "study-prompt");
+  const wordBlock = node("div", "study-word");
+  if (word.word.length >= 12) wordBlock.classList.add("long-word");
+  if (word.word.length >= 17) wordBlock.classList.add("very-long-word");
+  wordBlock.append(node("h2", null, word.word), node("p", "phonetic", phonetic(word)), node("p", "memory-question", "先在脑中说出核心意思"));
+  if (!state.studyRevealed) {
+    const reveal = node("button", "reveal-button", "显示答案");
+    reveal.type = "button";
+    reveal.addEventListener("click", () => {
+      state.studyRevealed = true;
+      renderStudy();
+    });
+    wordBlock.append(reveal);
+  }
+  prompt.append(wordBlock);
+  card.append(top, prompt);
+  if (state.studyRevealed) card.append(renderStudyAnswer(word));
+  const navigation = node("footer", "study-navigation");
+  const previous = node("button", null, "← 上一个");
+  previous.type = "button";
+  previous.disabled = state.studyIndex === 0;
+  previous.addEventListener("click", () => {
+    state.studyIndex = Math.max(0, state.studyIndex - 1);
+    state.studyRevealed = false;
+    renderStudy();
+  });
+  const later = node("button", null, "稍后再看 →");
+  later.type = "button";
+  later.addEventListener("click", () => {
+    state.studyIndex += 1;
+    state.studyRevealed = false;
+    renderStudy();
+  });
+  navigation.append(previous, later);
+  card.append(navigation);
+  elements.studyStage.replaceChildren(card);
+}
+
+function setDrawer(open) {
+  elements.shell.classList.toggle("drawer-open", open);
+  elements.shade.hidden = !open;
+  document.body.style.overflow = open ? "hidden" : "";
+  document.querySelector("#openVocabDrawer").setAttribute("aria-expanded", String(open));
+}
+
+function setView(view, { scroll = false } = {}) {
+  state.view = viewValues.has(view) ? view : "study";
+  elements.studyView.hidden = state.view !== "study";
+  elements.libraryView.hidden = state.view !== "library";
+  for (const button of document.querySelectorAll("[data-view-button]")) button.setAttribute("aria-pressed", String(button.dataset.viewButton === state.view));
+  try { localStorage.setItem("kaoyan.vocabulary.view", state.view); } catch {}
+  updateUrl();
+  setDrawer(false);
+  if (state.view === "study" && state.sessionWords.length === 0 && state.words.length > 0) startStudySession();
+  if (scroll) scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function collapseAllWords() {
+  for (const details of document.querySelectorAll("#mainContent details[open]")) details.open = false;
+  setDrawer(false);
 }
 
 function configureControls() {
+  elements.search.value = state.query;
+  elements.sessionSize.value = String(state.sessionSize);
+  for (const button of document.querySelectorAll("[data-view-button]")) {
+    button.addEventListener("click", () => setView(button.dataset.viewButton));
+    button.addEventListener("dblclick", () => setView(button.dataset.viewButton, { scroll: true }));
+  }
   elements.search.addEventListener("input", () => {
     state.query = elements.search.value;
-    render();
+    state.page = 1;
+    updateUrl();
+    renderLibrary();
   });
   for (const button of elements.filterBar.querySelectorAll("button[data-filter]")) {
     button.addEventListener("click", () => {
       state.filter = button.dataset.filter;
-      render();
+      state.page = 1;
+      updateUrl();
+      renderLibrary();
     });
+  }
+  elements.sessionSize.addEventListener("change", () => {
+    state.sessionSize = Number.parseInt(elements.sessionSize.value, 10);
+    try { localStorage.setItem("kaoyan.vocabulary.sessionSize", String(state.sessionSize)); } catch {}
+    startStudySession();
+  });
+  document.querySelector("#restartSession").addEventListener("click", startStudySession);
+  document.querySelector("#studyVisibleWords").addEventListener("click", () => {
+    state.studyPoolIds = visibleWords().map((word) => word.id);
+    setView("study", { scroll: true });
+    startStudySession();
+  });
+  document.querySelector("#collapseAllWords").addEventListener("click", collapseAllWords);
+  document.querySelector("#openVocabDrawer").addEventListener("click", () => setDrawer(true));
+  elements.shade.addEventListener("click", () => setDrawer(false));
+  document.querySelector("#vocabSidebarCollapse").addEventListener("click", () => {
+    const collapsed = !elements.shell.classList.contains("sidebar-collapsed");
+    elements.shell.classList.toggle("sidebar-collapsed", collapsed);
+    document.querySelector("#vocabSidebarCollapse").setAttribute("aria-expanded", String(!collapsed));
+    document.querySelector("#vocabSidebarCollapseLabel").textContent = collapsed ? "展开功能栏" : "收起功能栏";
+    try { localStorage.setItem("kaoyan.vocabulary.sidebarCollapsed", String(collapsed)); } catch {}
+  });
+  let collapsed = false;
+  try { collapsed = localStorage.getItem("kaoyan.vocabulary.sidebarCollapsed") === "true"; } catch {}
+  elements.shell.classList.toggle("sidebar-collapsed", collapsed);
+  document.querySelector("#vocabSidebarCollapse").setAttribute("aria-expanded", String(!collapsed));
+  document.querySelector("#vocabSidebarCollapseLabel").textContent = collapsed ? "展开功能栏" : "收起功能栏";
+  addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setDrawer(false);
+    if (event.key === " " && state.view === "study" && !state.studyRevealed && !/^(INPUT|SELECT|TEXTAREA|BUTTON)$/u.test(document.activeElement?.tagName ?? "")) {
+      event.preventDefault();
+      state.studyRevealed = true;
+      renderStudy();
+    }
+  });
+}
+
+async function configureServiceWorker() {
+  if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
+  try {
+    const registration = await navigator.serviceWorker.register(new URL("../../sw.js", import.meta.url), { scope: new URL("../../", import.meta.url).pathname });
+    const banner = document.querySelector("#updateBanner");
+    const showUpdate = () => { banner.hidden = false; };
+    if (registration.waiting) showUpdate();
+    registration.addEventListener("updatefound", () => {
+      registration.installing?.addEventListener("statechange", () => {
+        if (registration.installing?.state === "installed" && navigator.serviceWorker.controller) showUpdate();
+      });
+    });
+    document.querySelector("#applyUpdate").addEventListener("click", () => registration.waiting?.postMessage({ type: "SKIP_WAITING" }));
+    let reloading = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (reloading) return;
+      reloading = true;
+      location.reload();
+    });
+  } catch {
+    // 本地预览或不支持 Service Worker 时不阻塞学习。
   }
 }
 
 async function start() {
   configureControls();
+  setView(state.view);
   try {
-    const [{ words, version, mode }, records] = await Promise.all([
-      loadVocabularyData(),
-      listWordProgress(),
-    ]);
+    const [{ words, version, mode }, records] = await Promise.all([loadVocabularyData(), listWordProgress()]);
     state.words = words;
     state.version = version;
     state.mode = mode;
     state.progress = new Map((records ?? []).map((record) => [record.wordId, record]));
-    elements.status.textContent = `${mode === "preview" ? "预览词库" : "正式词库"} · ${words.length} 词 · 内容版本 ${version.contentVersion}`;
-    render();
+    elements.status.textContent = `${mode === "preview" ? "预览" : "正式"}词库 · ${words.length} 词 · v${version.contentVersion}`;
+    renderSideStats();
+    renderLibrary();
+    startStudySession();
   } catch (error) {
     elements.loading.hidden = false;
     elements.loading.textContent = error.message;
+    elements.studyStage.replaceChildren(node("p", "loading-state", error.message));
+    elements.studyStage.setAttribute("aria-busy", "false");
     elements.status.textContent = "单词数据加载失败";
   }
+  configureServiceWorker();
 }
 
 start();

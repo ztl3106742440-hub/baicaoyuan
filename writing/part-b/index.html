@@ -35,8 +35,17 @@
         <a href="#b-topics" data-short="06"><span>主题补充素材</span></a>
         <a href="#b-takeaways" data-short="07"><span>本节必带走</span></a>
       </nav>
-      <button class="sidebar-data open-data-center" type="button">⇩ 教材与学习记录</button>
-      <p class="sidebar-note"><strong>Evidence first.</strong><span>先写材料给出的事实，再解释和回应。</span></p>
+      <div class="sidebar-footer">
+        <button class="sidebar-tool" id="collapseAllContent" type="button"><span aria-hidden="true">↟</span><span class="sidebar-tool-label">收起全部展开内容</span></button>
+        <button class="sidebar-tool" id="openSearch" type="button" aria-haspopup="dialog"><span aria-hidden="true">⌕</span><span class="sidebar-tool-label">搜索教材</span></button>
+        <button class="sidebar-tool open-data-center" id="openDataCenter" type="button" aria-haspopup="dialog"><span aria-hidden="true">⇩</span><span class="sidebar-tool-label">教材与学习记录</span></button>
+        <div class="theme-switcher" role="group" aria-label="写作主题">
+          <button type="button" data-theme-choice="nature" aria-label="自然猫狗读物主题">A</button>
+          <button type="button" data-theme-choice="newspaper" aria-label="报纸编辑海报主题">B</button>
+          <button type="button" data-theme-choice="collage" aria-label="文艺时尚拼贴主题">C</button>
+        </div>
+        <p class="sidebar-note"><strong>Evidence first.</strong><span>先写材料给出的事实，再解释和回应。</span></p>
+      </div>
     </aside>
 
     <main class="main-column" id="mainContent">
@@ -46,21 +55,12 @@
           <a class="active" href="./" aria-current="page">写作</a>
           <a href="../../vocabulary/">单词</a>
         </nav>
-        <div class="app-actions">
-          <button class="text-button" id="openSearch" type="button" aria-haspopup="dialog"><span aria-hidden="true">⌕</span> 搜索</button>
-          <button class="text-button open-data-center" id="openDataCenter" type="button" aria-haspopup="dialog"><span aria-hidden="true">⇩</span> 数据</button>
-          <div class="theme-switcher" role="group" aria-label="写作主题">
-            <button type="button" data-theme-choice="nature" aria-label="自然猫狗读物主题">A</button>
-            <button type="button" data-theme-choice="newspaper" aria-label="报纸编辑海报主题">B</button>
-            <button type="button" data-theme-choice="collage" aria-label="文艺时尚拼贴主题">C</button>
-          </div>
-          <button class="icon-button" id="fontToggle" type="button" aria-label="切换大字号">A+</button>
-        </div>
+        <div class="app-actions"><button class="icon-button" id="fontToggle" type="button" aria-label="切换大字号">A+</button></div>
       </header>
 
       <nav class="part-switch" aria-label="写作分区">
-        <a data-part-link="A" href="../part-a/"><span>Part A</span><strong>小作文</strong><small>10 分 · 交际任务</small></a>
-        <a class="active" data-part-link="B" href="./" aria-current="page"><span>Part B</span><strong>大作文</strong><small>20 分 · 材料论证</small></a>
+        <a class="top-page-button" data-part-link="A" href="../part-a/"><span>Part A</span><strong>小作文</strong><small>10 分 · 交际任务</small></a>
+        <a class="active top-page-button" data-part-link="B" href="./" aria-current="page" title="双击返回顶部"><span>Part B</span><strong>大作文</strong><small>20 分 · 材料论证</small></a>
       </nav>
 
       <header class="writing-hero">

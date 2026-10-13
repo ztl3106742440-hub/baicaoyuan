@@ -482,6 +482,30 @@ function configureSidebar() {
   });
 }
 
+function configureLearningUtilities() {
+  const collapseButton = document.querySelector("#collapseAllContent");
+  const collapseLabel = collapseButton?.querySelector(".sidebar-tool-label");
+  collapseButton?.addEventListener("click", () => {
+    const openItems = [...document.querySelectorAll("#mainContent details[open]")];
+    for (const details of openItems) details.open = false;
+    if (collapseLabel) {
+      collapseLabel.textContent = openItems.length > 0 ? `已收起 ${openItems.length} 项` : "当前没有展开内容";
+      setTimeout(() => { collapseLabel.textContent = "收起全部展开内容"; }, 1200);
+    }
+    if (isNarrow()) setDrawer(false);
+  });
+
+  for (const link of document.querySelectorAll(".top-page-button[data-part-link]")) {
+    if (link.getAttribute("aria-current") === "page") {
+      link.addEventListener("click", (event) => event.preventDefault());
+      link.addEventListener("dblclick", (event) => {
+        event.preventDefault();
+        scrollTo({ top: 0, behavior: "smooth" });
+      });
+    }
+  }
+}
+
 function setActiveSection(id) {
   for (const link of document.querySelectorAll("#sectionNav a")) {
     const active = link.hash === `#${id}`;
@@ -723,6 +747,7 @@ async function initialize() {
   history.scrollRestoration = "manual";
   configureTheme();
   configureSidebar();
+  configureLearningUtilities();
   configureFontSize();
   configureSectionTracking();
   configurePositionMemory();

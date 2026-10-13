@@ -1,6 +1,6 @@
 const CACHE_PREFIX = "kaoyan-english";
-const SHELL_CACHE = `${CACHE_PREFIX}-shell-v4-6`;
-const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-v4-6`;
+const SHELL_CACHE = `${CACHE_PREFIX}-shell-v4-7`;
+const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-v4-7`;
 const scopeUrl = new URL(self.registration.scope);
 const shellPaths = [
   "./",

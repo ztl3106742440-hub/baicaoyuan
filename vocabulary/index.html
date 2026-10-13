@@ -3,72 +3,141 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#263238">
-  <meta name="description" content="百草园个人难词学习模块：助记、辨析与本地复习状态。">
-  <title>单词｜百草园</title>
+  <meta name="theme-color" content="#f4f6f1">
+  <meta name="description" content="百草园难词学习：单卡背诵、分组学习、分页词库与本地复习状态。">
+  <title>单词学习｜百草园</title>
   <link rel="manifest" href="../manifest.webmanifest">
   <link rel="icon" href="../assets/icons/app-icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../assets/css/vocabulary.css">
 </head>
-<body>
-  <header class="vocab-bar">
-    <a class="vocab-brand" href="../" aria-label="百草园首页">
-      <img src="../assets/icons/app-icon.svg" alt="">
-      <span>百草园</span>
-    </a>
-    <nav aria-label="应用主功能">
-      <a href="../writing/part-b/">写作</a>
-      <a class="active" href="./" aria-current="page">单词</a>
-    </nav>
-  </header>
+<body data-module="vocabulary">
+  <a class="skip-link" href="#mainContent">跳到学习区</a>
+  <div class="vocab-shell" id="vocabShell">
+    <button class="drawer-shade" id="drawerShade" type="button" aria-label="关闭功能栏" hidden></button>
 
-  <main class="vocab-main">
-    <section class="vocab-hero" aria-labelledby="vocab-title">
-      <div>
-        <p class="kicker">VOCABULARY · MEMORY FIRST</p>
-        <h1 id="vocab-title">只收那些反复背不住的词。</h1>
-        <p class="lead">先看十秒速记，需要时再展开义项、助记、辨析、搭配与例句。教材可以公开更新，你的认识程度和收藏只留在当前设备。</p>
+    <aside class="vocab-sidebar" id="vocabSidebar" aria-label="单词功能栏">
+      <a class="vocab-brand" href="../" aria-label="返回百草园首页">
+        <img src="../assets/icons/app-icon.svg" alt="">
+        <span class="brand-copy"><strong>百草园</strong><small>VOCABULARY</small></span>
+      </a>
+
+      <nav class="side-nav" aria-label="单词学习功能">
+        <p>学习</p>
+        <button type="button" data-view-button="study" aria-pressed="true">
+          <span class="side-icon" aria-hidden="true">记</span><span class="side-label"><strong>背单词</strong><small>一词一卡主动回忆</small></span>
+        </button>
+        <button type="button" data-view-button="library" aria-pressed="false">
+          <span class="side-icon" aria-hidden="true">库</span><span class="side-label"><strong>单词库</strong><small>分页浏览完整词条</small></span>
+        </button>
+        <p>应用</p>
+        <a href="../writing/part-b/">
+          <span class="side-icon" aria-hidden="true">写</span><span class="side-label"><strong>返回写作</strong><small>百草园主要学习模块</small></span>
+        </a>
+      </nav>
+
+      <section class="side-progress" aria-label="词库学习概况">
+        <p>本机学习概况</p>
+        <div><span>词库</span><strong id="sideTotal">0</strong></div>
+        <div><span>待学习</span><strong id="sidePending">0</strong></div>
+        <div><span>已认识</span><strong id="sideKnown">0</strong></div>
+      </section>
+
+      <div class="sidebar-footer">
+        <button class="sidebar-tool" id="collapseAllWords" type="button">
+          <span aria-hidden="true">↟</span><span class="side-label">收起全部展开内容</span>
+        </button>
+        <button class="sidebar-tool" id="vocabSidebarCollapse" type="button" aria-expanded="true">
+          <span class="sidebar-collapse-icon" aria-hidden="true">‹</span><span class="side-label" id="vocabSidebarCollapseLabel">收起功能栏</span>
+        </button>
       </div>
-      <aside class="library-state" aria-label="词库状态">
-        <span>当前词库</span>
-        <strong id="vocabularyStatus">正在读取单词数据…</strong>
-        <p>外部 GPT 初稿保持“草稿 · 未核查”标记。</p>
-      </aside>
-    </section>
+    </aside>
 
-    <section class="vocab-controls" aria-label="搜索与筛选">
-      <label class="search-box" for="wordSearch">
-        <span>搜索</span>
-        <input id="wordSearch" type="search" inputmode="search" autocomplete="off" placeholder="单词、中文义、助记、搭配…">
-      </label>
-      <div id="wordFilters" class="filter-row" aria-label="掌握程度筛选">
-        <button type="button" data-filter="all" aria-pressed="true">全部 <span>0</span></button>
-        <button type="button" data-filter="unrated" aria-pressed="false">未标记 <span>0</span></button>
-        <button type="button" data-filter="unknown" aria-pressed="false">不会 <span>0</span></button>
-        <button type="button" data-filter="unstable" aria-pressed="false">模糊 <span>0</span></button>
-        <button type="button" data-filter="known" aria-pressed="false">认识 <span>0</span></button>
-        <button type="button" data-filter="starred" aria-pressed="false">收藏 <span>0</span></button>
-      </div>
-      <div class="list-meta">
-        <p id="wordCount">正在读取词库…</p>
-        <p>点击词卡展开；掌握状态自动保存在本机。</p>
-      </div>
-    </section>
+    <main class="vocab-workspace" id="mainContent">
+      <header class="vocab-topbar">
+        <button class="top-icon mobile-only" id="openVocabDrawer" type="button" aria-label="打开功能栏" aria-expanded="false">☰</button>
+        <nav class="view-tabs" aria-label="单词分页；双击当前页返回顶部">
+          <button class="top-page-button" type="button" data-view-button="study" aria-pressed="true" title="双击返回顶部">背单词</button>
+          <button class="top-page-button" type="button" data-view-button="library" aria-pressed="false" title="双击返回顶部">单词库</button>
+        </nav>
+        <div class="top-status">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="vocabularyStatus">正在读取词库…</span>
+        </div>
+      </header>
 
-    <section aria-live="polite" aria-busy="false">
-      <p id="wordLoading" class="loading-state">正在加载首批难词…</p>
-      <div id="wordList" class="word-list"></div>
-    </section>
+      <section class="app-view study-view" id="studyView" data-view="study" aria-labelledby="studyTitle">
+        <header class="view-heading">
+          <div>
+            <p class="eyebrow">FOCUSED RECALL</p>
+            <h1 id="studyTitle">背单词</h1>
+            <p>先回忆，再揭晓；一次只处理一个词。</p>
+          </div>
+          <div class="study-setup">
+            <label for="sessionSize">本轮</label>
+            <select id="sessionSize">
+              <option value="10">10 词</option>
+              <option value="20" selected>20 词</option>
+              <option value="30">30 词</option>
+            </select>
+            <button id="restartSession" type="button">重新组卷</button>
+          </div>
+        </header>
 
-    <footer class="vocab-footer">
-      <p>公开教材 · 本地记录 · 无需账号</p>
-      <div><a href="../writing/part-b/">返回写作</a><a href="https://github.com/ztl3106742440-hub/baicaoyuan">GitHub</a></div>
-    </footer>
-  </main>
+        <div class="study-progress" aria-live="polite">
+          <div><span id="studyProgressText">准备学习…</span><strong id="studyRoundStatus">未开始</strong></div>
+          <div class="progress-track" aria-hidden="true"><span id="studyProgressBar"></span></div>
+        </div>
 
+        <section class="study-stage" id="studyStage" aria-live="polite" aria-busy="true">
+          <p class="loading-state">正在准备本轮单词…</p>
+        </section>
+      </section>
+
+      <section class="app-view library-view" id="libraryView" data-view="library" aria-labelledby="libraryTitle" hidden>
+        <header class="view-heading library-heading">
+          <div>
+            <p class="eyebrow">WORD LIBRARY</p>
+            <h1 id="libraryTitle">单词库</h1>
+            <p>每页只显示当前一组，展开查看完整词条。</p>
+          </div>
+          <button class="primary-action" id="studyVisibleWords" type="button">背当前筛选</button>
+        </header>
+
+        <section class="library-tools" aria-label="词库筛选">
+          <label class="search-box" for="wordSearch">
+            <span aria-hidden="true">⌕</span>
+            <input id="wordSearch" type="search" inputmode="search" autocomplete="off" placeholder="查单词或中文义">
+          </label>
+          <div id="wordFilters" class="filter-row" aria-label="掌握程度筛选">
+            <button type="button" data-filter="all" aria-pressed="true">全部 <span>0</span></button>
+            <button type="button" data-filter="unrated" aria-pressed="false">未学 <span>0</span></button>
+            <button type="button" data-filter="unknown" aria-pressed="false">不会 <span>0</span></button>
+            <button type="button" data-filter="unstable" aria-pressed="false">模糊 <span>0</span></button>
+            <button type="button" data-filter="known" aria-pressed="false">认识 <span>0</span></button>
+            <button type="button" data-filter="starred" aria-pressed="false">收藏 <span>0</span></button>
+          </div>
+        </section>
+
+        <div class="library-summary">
+          <p id="wordCount">正在读取词库…</p>
+          <p>双击上方“单词库”返回顶部</p>
+        </div>
+        <nav class="pagination top-pagination" id="topPagination" aria-label="词库顶部翻页"></nav>
+        <section aria-live="polite" aria-busy="false">
+          <p id="wordLoading" class="loading-state">正在加载难词…</p>
+          <div id="wordList" class="word-list"></div>
+        </section>
+        <nav class="pagination bottom-pagination" id="bottomPagination" aria-label="词库底部翻页"></nav>
+      </section>
+
+      <footer class="vocab-footer">
+        <span>公开教材 · 学习记录只保存在本机</span>
+        <a href="https://github.com/ztl3106742440-hub/baicaoyuan" rel="noopener">GitHub</a>
+      </footer>
+    </main>
+  </div>
+
+  <aside class="update-banner" id="updateBanner" hidden><span>新版本已经准备好。</span><button type="button" id="applyUpdate">更新并重载</button></aside>
   <script type="module" src="../assets/js/vocabulary-app.js"></script>
-  <script>
-    if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("../sw.js", { scope: "../" }).catch(() => {});
-  </script>
 </body>
 </html>

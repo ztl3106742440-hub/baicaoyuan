@@ -65,8 +65,11 @@ summary { cursor: pointer; }
   position: sticky;
   top: 0;
   z-index: 30;
+  display: flex;
   align-self: start;
   height: 100vh;
+  min-height: 0;
+  flex-direction: column;
   overflow: auto;
   padding: 24px 14px max(24px, env(safe-area-inset-bottom));
   border-right: 1px solid var(--rule);
@@ -147,26 +150,46 @@ summary { cursor: pointer; }
   border-radius: 99px;
   background: var(--accent);
 }
+.sidebar-footer { display: grid; gap: 5px; margin-top: auto; padding-top: 22px; }
+.sidebar-tool {
+  display: flex;
+  width: 100%;
+  min-height: 44px;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 11px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--muted);
+  text-align: left;
+}
+.sidebar-tool:hover { border-color: var(--rule); background: color-mix(in srgb, var(--surface) 76%, transparent); color: var(--accent-strong); }
+.sidebar-tool > span:first-child { display: grid; width: 24px; flex: 0 0 24px; place-items: center; font-size: 18px; }
+.sidebar-tool-label { font-size: 11px; font-weight: 750; white-space: nowrap; }
+.sidebar-footer .theme-switcher { justify-self: start; margin: 6px 8px 0; background: color-mix(in srgb, var(--surface) 75%, transparent); }
 .sidebar-note {
   display: grid;
   gap: 5px;
-  margin: 30px 10px 0;
+  margin: 14px 10px 0;
   color: var(--accent-strong);
   font: italic 14px/1.4 var(--font-display);
   white-space: nowrap;
 }
 .sidebar-note span { color: var(--muted); font: 11px/1.5 var(--font-ui); }
-.sidebar-data { display: none; width: calc(100% - 20px); min-height: 44px; align-items: center; margin: 12px 10px 0; padding: 8px 12px; border: 1px solid var(--rule); border-radius: 9px; background: var(--surface); color: var(--accent-strong); font-weight: 750; }
 .app-shell.sidebar-collapsed .sidebar { padding-inline: 9px; }
 .app-shell.sidebar-collapsed .brand { justify-content: center; }
 .app-shell.sidebar-collapsed .brand-copy,
 .app-shell.sidebar-collapsed .collapse-label,
 .app-shell.sidebar-collapsed .nav-overline,
 .app-shell.sidebar-collapsed .section-nav a span,
+.app-shell.sidebar-collapsed .sidebar-tool-label,
+.app-shell.sidebar-collapsed .sidebar-footer .theme-switcher,
 .app-shell.sidebar-collapsed .sidebar-note { display: none; }
 .app-shell.sidebar-collapsed .sidebar-collapse { justify-content: center; padding: 8px; }
 .app-shell.sidebar-collapsed .collapse-icon { transform: rotate(180deg); }
 .app-shell.sidebar-collapsed .section-nav a { justify-content: center; padding: 8px; }
+.app-shell.sidebar-collapsed .sidebar-tool { justify-content: center; padding-inline: 6px; }
 .app-shell.sidebar-collapsed .section-nav a::before { position: static; font-size: 13px; }
 .app-shell.sidebar-collapsed .section-nav a.active::after { inset-block: 8px; }
 
@@ -663,12 +686,15 @@ html.large-type .sentence-zh, html.large-type .why-note { font-size: 14px; }
   .app-shell.sidebar-collapsed .collapse-label,
   .app-shell.sidebar-collapsed .nav-overline,
   .app-shell.sidebar-collapsed .section-nav a span,
+  .app-shell.sidebar-collapsed .sidebar-tool-label,
   .app-shell.sidebar-collapsed .sidebar-note { display: initial; }
   .app-shell.sidebar-collapsed .brand-copy { display: block; }
   .app-shell.sidebar-collapsed .sidebar-note { display: grid; }
+  .app-shell.sidebar-collapsed .sidebar-footer .theme-switcher { display: flex; }
   .app-shell.sidebar-collapsed .sidebar-collapse { justify-content: start; padding: 8px 12px; }
   .app-shell.sidebar-collapsed .collapse-icon { transform: none; }
   .app-shell.sidebar-collapsed .section-nav a { justify-content: start; padding: 8px 11px 8px 34px; }
+  .app-shell.sidebar-collapsed .sidebar-tool { justify-content: start; padding: 8px 11px; }
   .app-shell.sidebar-collapsed .section-nav a::before { position: absolute; left: 9px; }
   .drawer-shade { position: fixed; inset: 0; z-index: 50; display: block; width: 100%; border: 0; background: rgb(25 30 25 / 43%); }
   .mobile-only { display: inline-grid; place-items: center; }
@@ -679,8 +705,7 @@ html.large-type .sentence-zh, html.large-type .why-note { font-size: 14px; }
   .text-button span { font-size: 20px; }
   .theme-switcher button { width: 34px; min-height: 34px; }
   .app-actions { gap: 5px; }
-  #openDataCenter { display: none; }
-  .sidebar-data { display: flex; }
+  .sidebar-footer { margin-top: auto; }
   .part-switch { grid-template-columns: repeat(2, 1fr); padding: 12px 12px 0; gap: 7px; }
   .part-switch a { min-height: 64px; padding: 8px 10px; gap: 0 7px; }
   .part-switch a > span { font-size: 11px; }
