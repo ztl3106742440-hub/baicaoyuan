@@ -1,6 +1,6 @@
 const CACHE_PREFIX = "kaoyan-english";
-const SHELL_CACHE = `${CACHE_PREFIX}-shell-v4-9`;
-const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-v4-9`;
+const SHELL_CACHE = `${CACHE_PREFIX}-shell-v4-10`;
+const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-v4-10`;
 const scopeUrl = new URL(self.registration.scope);
 const shellPaths = [
   "./",
@@ -11,12 +11,21 @@ const shellPaths = [
   "./writing/part-b/index.html",
   "./vocabulary/",
   "./vocabulary/index.html",
+  "./vocabulary/networks/",
+  "./vocabulary/networks/index.html",
+  "./vocabulary/reading/",
+  "./vocabulary/reading/index.html",
   "./manifest.webmanifest",
   "./assets/css/writing.css",
   "./assets/css/vocabulary.css",
+  "./assets/css/study-materials.css",
   "./assets/js/storage.js",
   "./assets/js/vocabulary-data.js",
   "./assets/js/vocabulary-app.js",
+  "./assets/js/study-data.js",
+  "./assets/js/learning-shell.js",
+  "./assets/js/networks-app.js",
+  "./assets/js/reading-app.js",
   "./assets/js/writing-data.js",
   "./assets/js/writing-app.js",
   "./assets/icons/app-icon.svg",
@@ -35,6 +44,7 @@ const publishedManifests = [
   { path: "./version.preview.json", dataKey: "wordData" },
   { path: "./writing-version.json", dataKey: "writingData" },
   { path: "./writing-version.preview.json", dataKey: "writingData" },
+  { path: "./study-version.json", dataKey: "studyData" },
 ];
 
 async function precachePublishedData() {
@@ -103,7 +113,7 @@ self.addEventListener("fetch", (event) => {
   if (request.method !== "GET") return;
   const url = new URL(request.url);
   if (url.origin !== scopeUrl.origin || !url.pathname.startsWith(scopeUrl.pathname)) return;
-  const isVersionManifest = /(?:^|\/)(?:writing-)?version(?:\.preview)?\.json$/u.test(url.pathname);
+  const isVersionManifest = /(?:^|\/)(?:writing-|study-)?version(?:\.preview)?\.json$/u.test(url.pathname);
   if (isVersionManifest) {
     event.respondWith(networkFirst(request));
     return;

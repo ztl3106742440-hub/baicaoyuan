@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f4f6f1">
+  <meta name="description" content="百草园考研英语阅读专题：题型方法、主题阅读、原创短文与选择题训练。">
+  <title>阅读专题｜百草园</title>
+  <link rel="manifest" href="../../manifest.webmanifest">
+  <link rel="icon" href="../../assets/icons/app-icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/css/vocabulary.css">
+  <link rel="stylesheet" href="../../assets/css/study-materials.css">
+</head>
+<body data-module="reading-specials">
+  <a class="skip-link" href="#mainContent">跳到学习区</a>
+  <div class="vocab-shell" id="vocabShell">
+    <button class="drawer-shade" id="drawerShade" type="button" aria-label="关闭功能栏" hidden></button>
+    <aside class="vocab-sidebar" id="vocabSidebar" aria-label="词汇学习功能栏">
+      <a class="vocab-brand" href="../../" aria-label="返回百草园首页"><img src="../../assets/icons/app-icon.svg" alt=""><span class="brand-copy"><strong>百草园</strong><small>READING LAB</small></span></a>
+      <nav class="side-nav" aria-label="词汇学习功能">
+        <p>词汇学习</p>
+        <a href="../"><span class="side-icon" aria-hidden="true">记</span><span class="side-label"><strong>背单词</strong><small>单卡记忆与完整词库</small></span></a>
+        <a href="../networks/"><span class="side-icon" aria-hidden="true">网</span><span class="side-label"><strong>词汇关系网</strong><small>语义、词形与搭配辨析</small></span></a>
+        <a class="active-side-link" href="./" aria-current="page"><span class="side-icon" aria-hidden="true">阅</span><span class="side-label"><strong>阅读专题</strong><small>逐专题读、答、证据复盘</small></span></a>
+        <p>应用</p>
+        <a href="../../writing/part-b/"><span class="side-icon" aria-hidden="true">写</span><span class="side-label"><strong>返回写作</strong><small>百草园主要学习模块</small></span></a>
+      </nav>
+      <section class="side-progress" aria-label="阅读专题进度">
+        <p>本机学习概况</p><div><span>专题</span><strong id="sideModuleTotal">0</strong></div><div><span>已完成</span><strong id="sideCompletedTotal">0</strong></div>
+      </section>
+      <div class="sidebar-footer">
+        <button class="sidebar-tool" id="collapseAllStudy" type="button"><span aria-hidden="true">↟</span><span class="side-label">收起全部展开内容</span></button>
+        <button class="sidebar-tool" id="vocabSidebarCollapse" type="button" aria-expanded="true"><span class="sidebar-collapse-icon" aria-hidden="true">‹</span><span class="side-label" id="vocabSidebarCollapseLabel">收起功能栏</span></button>
+      </div>
+    </aside>
+    <main class="vocab-workspace" id="mainContent">
+      <header class="vocab-topbar learning-topbar">
+        <button class="top-icon mobile-only" id="openVocabDrawer" type="button" aria-label="打开功能栏" aria-expanded="false">☰</button>
+        <nav class="view-tabs" aria-label="词汇模块分页；双击当前页返回顶部">
+          <a class="top-page-button" href="../">背单词</a><a class="top-page-button" href="../?view=library">单词库</a><a class="top-page-button" href="../networks/">关系网</a><a class="top-page-button" href="./" aria-current="page" data-scroll-top>阅读</a>
+        </nav>
+        <div class="top-status"><span class="status-dot" aria-hidden="true"></span><span id="vocabularyStatus">正在读取阅读专题…</span></div>
+      </header>
+      <section class="app-view material-view reading-view" aria-labelledby="readingTitle">
+        <header class="view-heading material-heading"><div><p class="eyebrow">READ · DECIDE · PROVE</p><h1 id="readingTitle">阅读专题</h1><p>一次只练一个专题；提交以后才显示答案、证据句和干扰项诊断。</p></div><span class="draft-notice">26 专题 · 52 道原创题</span></header>
+        <div class="filter-row material-filters" id="readingFilters" aria-label="阅读专题分类"></div>
+        <section class="module-navigator" aria-label="专题导航">
+          <button id="previousModule" type="button">← 上一专题</button><label for="moduleSelect"><span>选择专题</span><select id="moduleSelect"></select></label><strong id="modulePosition">0 / 0</strong><button id="nextModule" type="button">下一专题 →</button>
+        </section>
+        <section class="reading-stage" id="readingStage" aria-live="polite"><p class="loading-state">正在加载阅读专题…</p></section>
+        <section class="module-navigator bottom-module-navigator" aria-label="专题底部导航">
+          <button id="bottomPreviousModule" type="button">← 上一专题</button><button id="bottomModuleTop" type="button">回到顶部</button><button id="bottomNextModule" type="button">下一专题 →</button>
+        </section>
+      </section>
+      <footer class="vocab-footer"><span>公开教材 · 完成记录只保存在本机</span><a href="https://github.com/ztl3106742440-hub/baicaoyuan" rel="noopener">GitHub</a></footer>
+    </main>
+  </div>
+  <aside class="update-banner" id="updateBanner" hidden><span>新版本已经准备好。</span><button type="button" id="applyUpdate">更新并重载</button></aside>
+  <script type="module" src="../../assets/js/reading-app.js"></script>
+</body>
+</html>

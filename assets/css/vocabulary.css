@@ -171,6 +171,8 @@ summary { cursor: pointer; }
 }
 .view-tabs { display: flex; gap: 6px; }
 .top-page-button {
+  display: inline-grid;
+  flex: 0 0 auto;
   min-width: 88px;
   min-height: 44px;
   padding: 7px 17px;
@@ -179,6 +181,7 @@ summary { cursor: pointer; }
   background: transparent;
   color: var(--muted);
   font-weight: 800;
+  place-items: center;
 }
 .top-page-button[aria-pressed="true"] { background: var(--ink); color: white; box-shadow: 0 7px 20px rgb(31 45 41 / 14%); }
 .top-status { display: flex; min-width: 0; align-items: center; gap: 8px; margin-left: auto; color: var(--muted); font-size: 11px; white-space: nowrap; }
@@ -401,6 +404,8 @@ summary { cursor: pointer; }
   .top-page-button { min-width: 72px; min-height: 42px; padding-inline: 12px; font-size: 12px; }
   .top-status { font-size: 0; }
   .top-status .status-dot { display: block; }
+  .vocab-topbar .view-tabs { min-width: 0; flex: 1; overflow-x: auto; scrollbar-width: none; }
+  .vocab-topbar .view-tabs::-webkit-scrollbar { display: none; }
   .app-view { width: calc(100% - 20px); padding: 21px 0 38px; }
   .view-heading { align-items: start; margin-bottom: 17px; }
   .view-heading h1 { font-size: 30px; }

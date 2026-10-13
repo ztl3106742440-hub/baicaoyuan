@@ -10,6 +10,23 @@
   "orientation": "any",
   "background_color": "#f6f2e8",
   "theme_color": "#33463a",
+  "shortcuts": [
+    {
+      "name": "背单词",
+      "short_name": "背单词",
+      "url": "./vocabulary/"
+    },
+    {
+      "name": "词汇关系网",
+      "short_name": "关系网",
+      "url": "./vocabulary/networks/"
+    },
+    {
+      "name": "阅读专题",
+      "short_name": "阅读",
+      "url": "./vocabulary/reading/"
+    }
+  ],
   "icons": [
     {
       "src": "./assets/icons/app-icon-192.png",

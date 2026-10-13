@@ -744,6 +744,7 @@ async function start() {
     renderSideStats();
     renderLibrary();
     startStudySession();
+    if (location.hash.startsWith("#word-")) requestAnimationFrame(() => document.getElementById(decodeURIComponent(location.hash.slice(1)))?.scrollIntoView({ block: "start" }));
   } catch (error) {
     elements.loading.hidden = false;
     elements.loading.textContent = error.message;

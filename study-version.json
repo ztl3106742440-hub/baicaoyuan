@@ -1,0 +1,16 @@
+{
+  "appVersion": "0.3.0",
+  "cacheVersion": "study-0.3.0-e8e96e0288078bb9",
+  "contentVersion": 1,
+  "generatedAt": "2026-10-13T20:30:00+08:00",
+  "mode": "release",
+  "schemaVersion": 1,
+  "studyData": {
+    "bytes": 380555,
+    "moduleCount": 26,
+    "networkCount": 69,
+    "questionCount": 52,
+    "sha256": "e8e96e0288078bb9e1f99a4366ac00cc5ca0f0837c3f73276ac26e11938196c3",
+    "url": "data/study.e8e96e0288078bb9e1f99a4366ac00cc5ca0f0837c3f73276ac26e11938196c3.json"
+  }
+}
