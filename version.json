@@ -1,0 +1,14 @@
+{
+  "appVersion": "0.2.0",
+  "cacheVersion": "app-0.2.0-content-2bd76b43d757c9be",
+  "contentVersion": 1,
+  "generatedAt": "2026-10-12T00:00:00+08:00",
+  "mode": "release",
+  "schemaVersion": 1,
+  "wordData": {
+    "bytes": 2586655,
+    "sha256": "2bd76b43d757c9bec0feb176e3e1d3722d5881105f6dde357bd7c17d61924e21",
+    "url": "data/words.2bd76b43d757c9bec0feb176e3e1d3722d5881105f6dde357bd7c17d61924e21.json",
+    "wordCount": 752
+  }
+}
