@@ -96,6 +96,7 @@ function createEntityFrame(entry, overline) {
   const card = element("article", "entity-card");
   card.id = `entry-${entry.id}`;
   card.dataset.entryId = entry.id;
+  card.dataset.entryKind = entry.kind;
   const head = element("header", "entity-head");
   const copy = element("div");
   appendParagraph(copy, "entity-overline", `${overline} · ${entry.id}`);
@@ -172,7 +173,7 @@ function createAnnotationDetails(sentence) {
   ].filter(([, value]) => value);
   if (notes.length === 0) return null;
   const details = element("details", "details-note");
-  details.append(element("summary", "", "展开语法、边界与失分提醒"));
+  details.append(element("summary", "", "点击展开 · 语法、边界与失分提醒"));
   for (const [label, value, className] of notes) details.append(element("div", className, `${label}：${value}`));
   return details;
 }
@@ -254,7 +255,7 @@ function createTemplateCard(entry) {
   }
   if ((entry.inapplicableTasks ?? []).length > 0) {
     const details = element("details", "study-details");
-    details.append(element("summary", "", "展开适用边界与不能硬套的任务"));
+    details.append(element("summary", "", "点击展开 · 适用边界与不能硬套的任务"));
     const list = element("ul");
     for (const item of entry.inapplicableTasks) list.append(element("li", "", item));
     details.append(list);
@@ -270,7 +271,7 @@ function createExpressionCard(entry) {
   appendParagraph(card, "expression-pattern", entry.patternEn);
   appendParagraph(card, "expression-zh", entry.meaningZh);
   const details = element("details");
-  details.append(element("summary", "", "查看用法、替换与典型错误"));
+  details.append(element("summary", "", "点击展开 · 用法、替换与典型错误"));
   const body = element("div");
   if ((entry.usageConditions ?? []).length > 0) {
     body.append(element("strong", "", "适用条件"));
@@ -321,7 +322,7 @@ function createPromptCard(entry) {
   card.append(brief);
 
   const practice = element("details", "prompt-practice");
-  practice.append(element("summary", "", "第一步：先自己审题并展开提纲"));
+  practice.append(element("summary", "", "点击展开 · 第一步：自己审题并查看提纲"));
   const outline = element("section", "outline-panel");
   outline.append(element("h4", "", `建议用时 ${entry.practiceSettings?.recommendedMinutes ?? "—"} 分钟 · 先想后看`));
   const outlineList = element("ol");
@@ -332,7 +333,7 @@ function createPromptCard(entry) {
 
   if (entry.modelResponse) {
     const response = element("details", "model-response");
-    response.append(element("summary", "", "第二步：显示原创示范与逐句批注"));
+    response.append(element("summary", "", "点击展开 · 第二步：显示原创示范与逐句批注"));
     appendParagraph(response, "model-disclaimer", entry.modelResponse.disclaimerZh);
     const toolbar = element("div", "reading-toolbar");
     toolbar.append(element("span", "", `${entry.modelResponse.label} · ${entry.modelResponse.wordCount} 词`));
