@@ -2,6 +2,7 @@ import {
   exportStudyBackup,
   getReviewState,
   importStudyBackup,
+  previewStudyBackup,
   readPreference,
   savePreference,
   saveReviewState,
@@ -19,6 +20,7 @@ const shell = document.querySelector("#appShell");
 const shade = document.querySelector("#drawerShade");
 const sidebar = document.querySelector("#sidebar");
 const contentStatus = document.querySelector("#contentStatus");
+const actionStatus = document.querySelector("#writingActionStatus");
 const currentPartSections = [...document.querySelectorAll(".learning-section")];
 const positionKey = `kaoyan.writing.position.${part}`;
 const themeKey = "kaoyan.writing.theme";
@@ -33,6 +35,19 @@ const reviewOptions = [
   ["fuzzy", "模糊"],
   ["mastered", "掌握"],
 ];
+
+let actionStatusTimer = null;
+
+function announceAction(message, tone = "error") {
+  if (!actionStatus) return;
+  clearTimeout(actionStatusTimer);
+  actionStatus.textContent = message;
+  actionStatus.dataset.tone = tone;
+  actionStatusTimer = setTimeout(() => {
+    actionStatus.textContent = "";
+    delete actionStatus.dataset.tone;
+  }, 6000);
+}
 const themeInformation = {
   nature: {
     src: new URL("../illustrations/nature-reader.svg", import.meta.url).href,
@@ -142,30 +157,40 @@ function createEntityFrame(entry, overline) {
 function createReviewControl(entry) {
   const control = element("div", "review-control");
   control.append(element("span", "", "掌握状态"));
+  let currentStatus = "new";
+  const renderStatus = () => {
+    for (const button of buttons) {
+      const active = button.dataset.reviewStatus === currentStatus;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-pressed", String(active));
+    }
+  };
   const buttons = reviewOptions.map(([value, label]) => {
     const button = element("button", "", label);
     button.type = "button";
     button.dataset.reviewStatus = value;
     button.setAttribute("aria-pressed", "false");
     button.addEventListener("click", async () => {
-      for (const candidate of buttons) {
-        const active = candidate === button;
-        candidate.classList.toggle("active", active);
-        candidate.setAttribute("aria-pressed", String(active));
+      for (const candidate of buttons) candidate.disabled = true;
+      try {
+        const saved = await saveReviewState(entry.id, value, activeBundle?.writingContentVersion ?? null);
+        if (saved == null) throw new Error("当前浏览器没有开放本地存储");
+        currentStatus = value;
+        renderStatus();
+      } catch (error) {
+        renderStatus();
+        announceAction(`掌握状态没有保存：${error.message}`);
+      } finally {
+        for (const candidate of buttons) candidate.disabled = false;
       }
-      await saveReviewState(entry.id, value, activeBundle?.writingContentVersion ?? null);
     });
     control.append(button);
     return button;
   });
   getReviewState(entry.id).then((state) => {
-    const current = state?.status ?? "new";
-    for (const button of buttons) {
-      const active = button.dataset.reviewStatus === current;
-      button.classList.toggle("active", active);
-      button.setAttribute("aria-pressed", String(active));
-    }
-  });
+    currentStatus = state?.status ?? "new";
+    renderStatus();
+  }).catch((error) => announceAction(`本机掌握状态暂时无法读取：${error.message}`));
   return control;
 }
 
@@ -792,7 +817,7 @@ function applyTheme(theme, persist = true) {
   }
   if (persist) {
     try { localStorage.setItem(themeKey, selected); } catch {}
-    savePreference("writingTheme", selected);
+    void savePreference("writingTheme", selected).catch(() => {});
   }
 }
 
@@ -806,7 +831,7 @@ function configureTheme() {
     let hasLocal = false;
     try { hasLocal = Boolean(localStorage.getItem(themeKey)); } catch {}
     if (!hasLocal && record?.value) applyTheme(record.value);
-  });
+  }).catch(() => {});
   addEventListener("storage", (event) => {
     if (event.key === themeKey && event.newValue) applyTheme(event.newValue, false);
   });
@@ -870,9 +895,9 @@ function configureSidebar() {
     if (isNarrow()) setDrawer(false);
   }));
   addEventListener("resize", () => {
-    setDrawer(false, { restoreFocus: false });
+    if (!isNarrow()) setDrawer(false, { restoreFocus: false });
     refreshLabel();
-  });
+  }, { passive: true });
   addEventListener("keydown", (event) => {
     if (event.key === "Escape" && shell.classList.contains("drawer-open")) {
       event.preventDefault();
@@ -1270,10 +1295,16 @@ function configureDataCenter() {
     const [file] = importInput.files;
     if (!file) return;
     try {
+      if (file.size > 5 * 1024 * 1024) throw new Error("文件超过 5 MB，请确认没有误选教材数据包。");
       const backup = JSON.parse(await file.text());
-      const counts = await importStudyBackup(backup);
-      const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
-      status.textContent = `已导入 ${total} 条学习记录。页面将在 1 秒后刷新。`;
+      const preview = await previewStudyBackup(backup);
+      const accepted = confirm(`将新增 ${preview.additions} 条本机没有的记录；${preview.conflicts} 条同 ID 记录会保留当前平板版本，不会覆盖。继续吗？`);
+      if (!accepted) {
+        status.textContent = "已取消导入，没有修改本机记录。";
+        return;
+      }
+      const result = await importStudyBackup(backup);
+      status.textContent = `已新增 ${result.additions} 条记录，保留 ${result.conflictsPreserved} 条本机冲突记录。页面将在 1 秒后刷新。`;
       setTimeout(() => location.reload(), 1000);
     } catch (error) {
       status.textContent = `导入失败：${error.message}`;

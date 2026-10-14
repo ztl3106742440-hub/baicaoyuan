@@ -1,5 +1,10 @@
 import { listWordProgress, saveWordProgress } from "./storage.js";
 import { loadVocabularyData, searchTextForWord } from "./vocabulary-data.js";
+import {
+  reinforcementInsertionIndex,
+  scheduleWordRating,
+  selectStudySession,
+} from "./word-scheduler.js";
 
 const PAGE_SIZE = 30;
 const viewValues = new Set(["study", "library"]);
@@ -47,6 +52,15 @@ function storedSessionSize() {
   }
 }
 
+function storedSessionCursor() {
+  try {
+    const value = Number.parseInt(localStorage.getItem("kaoyan.vocabulary.sessionCursor") ?? "0", 10);
+    return Number.isInteger(value) && value >= 0 ? value : 0;
+  } catch {
+    return 0;
+  }
+}
+
 const requestedView = urlParameters.get("view") ?? storedView();
 const requestedFilter = urlParameters.get("filter");
 const requestedPage = Number.parseInt(urlParameters.get("page") ?? "1", 10);
@@ -61,15 +75,26 @@ const state = {
   mode: null,
   sessionSize: storedSessionSize(),
   sessionWords: [],
+  sessionCursor: storedSessionCursor(),
+  nextSessionCursor: storedSessionCursor(),
+  sessionComposition: { due: 0, fresh: 0, extra: 0 },
   studyIndex: 0,
   studyRevealed: false,
   studyPoolIds: null,
+  ratedThisRound: new Set(),
+  reinforcementCounts: new Map(),
+  reinforcementReviews: 0,
+  searchIndex: new Map(),
   roundResults: { unknown: 0, unstable: 0, known: 0 },
 };
 
 const elements = {
   shell: document.querySelector("#vocabShell"),
+  sidebar: document.querySelector("#vocabSidebar"),
+  workspace: document.querySelector("#mainContent"),
   shade: document.querySelector("#drawerShade"),
+  openDrawer: document.querySelector("#openVocabDrawer"),
+  closeDrawer: document.querySelector("#closeVocabDrawer"),
   count: document.querySelector("#wordCount"),
   filterBar: document.querySelector("#wordFilters"),
   list: document.querySelector("#wordList"),
@@ -82,13 +107,27 @@ const elements = {
   studyProgressText: document.querySelector("#studyProgressText"),
   studyRoundStatus: document.querySelector("#studyRoundStatus"),
   studyProgressBar: document.querySelector("#studyProgressBar"),
+  actionStatus: document.querySelector("#vocabActionStatus"),
   sessionSize: document.querySelector("#sessionSize"),
+  studyVisibleWords: document.querySelector("#studyVisibleWords"),
   topPagination: document.querySelector("#topPagination"),
   bottomPagination: document.querySelector("#bottomPagination"),
   sideTotal: document.querySelector("#sideTotal"),
   sidePending: document.querySelector("#sidePending"),
   sideKnown: document.querySelector("#sideKnown"),
 };
+
+let actionStatusTimer = null;
+
+function announceAction(message, tone = "error") {
+  clearTimeout(actionStatusTimer);
+  elements.actionStatus.textContent = message;
+  elements.actionStatus.dataset.tone = tone;
+  actionStatusTimer = setTimeout(() => {
+    elements.actionStatus.textContent = "";
+    delete elements.actionStatus.dataset.tone;
+  }, 6000);
+}
 
 function node(tagName, className, text) {
   const element = document.createElement(tagName);
@@ -309,18 +348,9 @@ function renderDetails(word) {
 
 async function rateWord(wordId, rating) {
   const current = progressFor(wordId);
-  const isKnown = rating === "known";
-  const record = await saveWordProgress(wordId, {
-    status: isKnown ? "known" : "learning",
-    stage: isKnown ? Math.max(3, current.stage ?? 0) : Math.max(1, current.stage ?? 0),
-    lastRating: rating,
-    lastReviewedAt: new Date().toISOString(),
-    correctStreak: isKnown ? (current.correctStreak ?? 0) + 1 : 0,
-    lapses: rating === "unknown" ? (current.lapses ?? 0) + 1 : (current.lapses ?? 0),
-    reviewCount: (current.reviewCount ?? 0) + 1,
-    markedDifficult: rating === "unknown" ? true : current.markedDifficult ?? false,
-  });
-  if (record) state.progress.set(wordId, record);
+  const record = await saveWordProgress(wordId, scheduleWordRating(current, rating));
+  if (!record) throw new Error("当前浏览器没有开放本地学习记录");
+  state.progress.set(wordId, record);
   renderSideStats();
   updateFilterCounts();
   return record;
@@ -329,14 +359,14 @@ async function rateWord(wordId, rating) {
 async function toggleStar(wordId) {
   const current = progressFor(wordId);
   const record = await saveWordProgress(wordId, { starred: !current.starred });
-  if (record) state.progress.set(wordId, record);
+  if (!record) throw new Error("当前浏览器没有开放本地学习记录");
+  state.progress.set(wordId, record);
   renderSideStats();
   updateFilterCounts();
   return record;
 }
 
 function renderActions(word) {
-  const current = progressFor(word.id);
   const wrapper = node("div", "word-actions");
   const ratingGroup = node("div", "rating-group");
   ratingGroup.setAttribute("aria-label", `${word.word} 掌握程度`);
@@ -344,21 +374,42 @@ function renderActions(word) {
     const button = node("button", "rating-button", label);
     button.type = "button";
     button.dataset.rating = rating;
-    button.setAttribute("aria-pressed", String(current.lastRating === rating));
     button.addEventListener("click", async () => {
-      await rateWord(word.id, rating);
-      renderLibrary();
+      for (const control of wrapper.querySelectorAll("button")) control.disabled = true;
+      try {
+        await rateWord(word.id, rating);
+        syncActions();
+      } catch (error) {
+        announceAction(`${word.word} 的掌握状态没有保存：${error.message}`);
+      } finally {
+        for (const control of wrapper.querySelectorAll("button")) control.disabled = false;
+      }
     });
     ratingGroup.append(button);
   }
-  const star = node("button", "star-button", current.starred ? "★ 已收藏" : "☆ 收藏");
+  const star = node("button", "star-button");
   star.type = "button";
-  star.setAttribute("aria-pressed", String(Boolean(current.starred)));
   star.addEventListener("click", async () => {
-    await toggleStar(word.id);
-    renderLibrary();
+    for (const control of wrapper.querySelectorAll("button")) control.disabled = true;
+    try {
+      await toggleStar(word.id);
+      syncActions();
+    } catch (error) {
+      announceAction(`${word.word} 的收藏状态没有保存：${error.message}`);
+    } finally {
+      for (const control of wrapper.querySelectorAll("button")) control.disabled = false;
+    }
   });
   wrapper.append(ratingGroup, star);
+  function syncActions() {
+    const current = progressFor(word.id);
+    for (const button of ratingGroup.querySelectorAll("button[data-rating]")) {
+      button.setAttribute("aria-pressed", String(current.lastRating === button.dataset.rating));
+    }
+    star.textContent = current.starred ? "★ 已收藏" : "☆ 收藏";
+    star.setAttribute("aria-pressed", String(Boolean(current.starred)));
+  }
+  syncActions();
   return wrapper;
 }
 
@@ -376,7 +427,13 @@ function renderWord(word) {
   const tags = node("div", "word-tags");
   for (const tag of word.tags.slice(0, 3)) tags.append(badge(tagLabels[tag] ?? tag));
   summary.append(header, copy, tags, node("span", "expand-hint", "展开完整词条"));
-  details.append(summary, renderDetails(word));
+  details.append(summary);
+  let detailsRendered = false;
+  details.addEventListener("toggle", () => {
+    if (!details.open || detailsRendered) return;
+    details.append(renderDetails(word));
+    detailsRendered = true;
+  });
   article.append(details, renderActions(word));
   return article;
 }
@@ -391,7 +448,7 @@ function matchesFilter(word) {
 
 function visibleWords() {
   const query = state.query.trim().toLocaleLowerCase("zh-CN");
-  return state.words.filter((word) => matchesFilter(word) && (!query || searchTextForWord(word).includes(query)));
+  return state.words.filter((word) => matchesFilter(word) && (!query || state.searchIndex.get(word.id)?.includes(query)));
 }
 
 function pageCount(total) {
@@ -468,6 +525,8 @@ function renderLibrary() {
   const rangeStart = current.length === 0 ? 0 : start + 1;
   const rangeEnd = start + current.length;
   elements.count.textContent = `第 ${rangeStart}–${rangeEnd} 个，共 ${words.length} 个词；每页最多 ${PAGE_SIZE} 个`;
+  elements.studyVisibleWords.disabled = words.length === 0;
+  elements.studyVisibleWords.textContent = words.length === 0 ? "当前筛选无单词" : "背当前筛选";
   updateFilterCounts();
   renderPagination(elements.topPagination, words.length);
   renderPagination(elements.bottomPagination, words.length);
@@ -476,30 +535,41 @@ function renderLibrary() {
   else if (words.length === 0) elements.loading.textContent = "没有匹配的词。请调整筛选条件。";
 }
 
-function studyPriority(word) {
-  const rating = progressFor(word.id).lastRating;
-  return ({ unknown: 0, unstable: 1, null: 2, known: 3 })[String(rating)] ?? 2;
+function saveSessionCursor(value) {
+  state.sessionCursor = value;
+  try { localStorage.setItem("kaoyan.vocabulary.sessionCursor", String(value)); } catch {}
 }
 
-function candidateStudyWords() {
-  const allowed = state.studyPoolIds ? new Set(state.studyPoolIds) : null;
-  return state.words
-    .filter((word) => !allowed || allowed.has(word.id))
-    .map((word, index) => ({ word, index }))
-    .sort((left, right) => studyPriority(left.word) - studyPriority(right.word) || left.index - right.index)
-    .map(({ word }) => word);
-}
-
-function startStudySession() {
-  state.sessionWords = candidateStudyWords().slice(0, state.sessionSize);
+function startStudySession({ rotate = false } = {}) {
+  if (rotate) saveSessionCursor(state.nextSessionCursor);
+  const selection = selectStudySession(state.words, state.progress, {
+    size: state.sessionSize,
+    poolIds: state.studyPoolIds,
+    cursor: state.sessionCursor,
+  });
+  state.sessionWords = selection.words;
+  state.nextSessionCursor = selection.nextCursor;
+  state.sessionComposition = selection.composition;
   state.studyIndex = 0;
   state.studyRevealed = false;
+  state.ratedThisRound = new Set();
+  state.reinforcementCounts = new Map();
+  state.reinforcementReviews = 0;
   state.roundResults = { unknown: 0, unstable: 0, known: 0 };
   renderStudy();
 }
 
 function primaryMemoryHook(word) {
   return word.memoryHooks.find((hook) => hook.isPrimary) ?? word.memoryHooks[0] ?? null;
+}
+
+function queueReinforcement(word, rating) {
+  const insertionIndex = reinforcementInsertionIndex(rating, state.studyIndex, state.sessionWords.length);
+  const count = state.reinforcementCounts.get(word.id) ?? 0;
+  if (insertionIndex == null || count >= 2) return false;
+  state.sessionWords.splice(insertionIndex, 0, word);
+  state.reinforcementCounts.set(word.id, count + 1);
+  return true;
 }
 
 function renderStudyAnswer(word) {
@@ -514,13 +584,24 @@ function renderStudyAnswer(word) {
     button.type = "button";
     button.dataset.rating = rating;
     button.addEventListener("click", async () => {
-      button.disabled = true;
-      await rateWord(word.id, rating);
-      state.roundResults[rating] += 1;
-      state.studyIndex += 1;
-      state.studyRevealed = false;
-      renderStudy();
-      renderLibrary();
+      for (const control of ratings.querySelectorAll("button")) control.disabled = true;
+      const firstRating = !state.ratedThisRound.has(word.id);
+      try {
+        if (firstRating) {
+          await rateWord(word.id, rating);
+          state.ratedThisRound.add(word.id);
+          state.roundResults[rating] += 1;
+        } else {
+          state.reinforcementReviews += 1;
+        }
+        queueReinforcement(word, rating);
+        state.studyIndex += 1;
+        state.studyRevealed = false;
+        renderStudy({ focus: true });
+      } catch (error) {
+        announceAction(`${word.word} 的复习记录没有保存：${error.message}`);
+        for (const control of ratings.querySelectorAll("button")) control.disabled = false;
+      }
     });
     ratings.append(button);
   }
@@ -550,28 +631,35 @@ function renderSessionFinished() {
   body.append(
     node("h2", null, "本轮完成"),
     node("p", null, `不会 ${state.roundResults.unknown} · 模糊 ${state.roundResults.unstable} · 认识 ${state.roundResults.known}`),
+    node("p", "session-composition", `到期 ${state.sessionComposition.due} · 新词 ${state.sessionComposition.fresh} · 补充复习 ${state.sessionComposition.extra} · 本轮巩固 ${state.reinforcementReviews}`),
   );
   const restart = node("button", null, "再来一轮");
   restart.type = "button";
-  restart.addEventListener("click", startStudySession);
+  restart.addEventListener("click", () => startStudySession({ rotate: true }));
   body.append(restart);
   wrapper.append(body);
   return wrapper;
 }
 
-function renderStudy() {
+function renderStudy({ focus = false } = {}) {
   elements.studyStage.setAttribute("aria-busy", "false");
   const total = state.sessionWords.length;
   const completed = Math.min(state.studyIndex, total);
   elements.studyProgressText.textContent = total === 0 ? "当前没有可学习的单词" : `本轮 ${completed} / ${total}`;
-  elements.studyRoundStatus.textContent = total === 0 ? "空词库" : completed >= total ? "已完成" : `${total - completed} 词待学习`;
+  elements.studyRoundStatus.textContent = total === 0
+    ? "空词库"
+    : completed >= total
+      ? "已完成"
+      : `到期 ${state.sessionComposition.due} · 新词 ${state.sessionComposition.fresh} · 剩余 ${total - completed}`;
   elements.studyProgressBar.style.width = `${total === 0 ? 0 : (completed / total) * 100}%`;
   if (total === 0) {
     elements.studyStage.replaceChildren(node("p", "loading-state", "当前筛选没有可学习的单词。请到单词库调整筛选。"));
     return;
   }
   if (state.studyIndex >= total) {
+    saveSessionCursor(state.nextSessionCursor);
     elements.studyStage.replaceChildren(renderSessionFinished());
+    if (focus) requestAnimationFrame(() => elements.studyStage.querySelector("button")?.focus({ preventScroll: true }));
     return;
   }
   const word = state.sessionWords[state.studyIndex];
@@ -584,8 +672,15 @@ function renderStudy() {
   star.setAttribute("aria-label", currentProgress.starred ? "取消收藏" : "收藏单词");
   star.setAttribute("aria-pressed", String(Boolean(currentProgress.starred)));
   star.addEventListener("click", async () => {
-    await toggleStar(word.id);
-    renderStudy();
+    star.disabled = true;
+    try {
+      await toggleStar(word.id);
+      renderStudy({ focus: true });
+    } catch (error) {
+      announceAction(`${word.word} 的收藏状态没有保存：${error.message}`);
+      star.disabled = false;
+      star.focus({ preventScroll: true });
+    }
   });
   top.append(star);
   const prompt = node("section", "study-prompt");
@@ -598,7 +693,7 @@ function renderStudy() {
     reveal.type = "button";
     reveal.addEventListener("click", () => {
       state.studyRevealed = true;
-      renderStudy();
+      renderStudy({ focus: true });
     });
     wordBlock.append(reveal);
   }
@@ -612,25 +707,50 @@ function renderStudy() {
   previous.addEventListener("click", () => {
     state.studyIndex = Math.max(0, state.studyIndex - 1);
     state.studyRevealed = false;
-    renderStudy();
+    renderStudy({ focus: true });
   });
   const later = node("button", null, "稍后再看 →");
   later.type = "button";
   later.addEventListener("click", () => {
-    state.studyIndex += 1;
+    const [deferred] = state.sessionWords.splice(state.studyIndex, 1);
+    if (deferred) state.sessionWords.push(deferred);
     state.studyRevealed = false;
-    renderStudy();
+    renderStudy({ focus: true });
   });
   navigation.append(previous, later);
   card.append(navigation);
   elements.studyStage.replaceChildren(card);
+  if (focus) {
+    requestAnimationFrame(() => elements.studyStage.querySelector(state.studyRevealed ? ".study-rating button" : ".reveal-button")?.focus({ preventScroll: true }));
+  }
 }
 
-function setDrawer(open) {
-  elements.shell.classList.toggle("drawer-open", open);
-  elements.shade.hidden = !open;
-  document.body.style.overflow = open ? "hidden" : "";
-  document.querySelector("#openVocabDrawer").setAttribute("aria-expanded", String(open));
+function isNarrowLayout() {
+  return matchMedia("(max-width: 900px)").matches;
+}
+
+let drawerReturnFocus = null;
+
+function drawerFocusableElements() {
+  return [...elements.sidebar.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])')]
+    .filter((element) => !element.hidden && element.getClientRects().length > 0);
+}
+
+function setDrawer(open, { restoreFocus = true } = {}) {
+  const shouldOpen = Boolean(open && isNarrowLayout());
+  if (shouldOpen) drawerReturnFocus = document.activeElement;
+  elements.shell.classList.toggle("drawer-open", shouldOpen);
+  elements.shade.hidden = !shouldOpen;
+  document.body.style.overflow = shouldOpen ? "hidden" : "";
+  elements.openDrawer.setAttribute("aria-expanded", String(shouldOpen));
+  elements.sidebar.inert = isNarrowLayout() && !shouldOpen;
+  elements.workspace.inert = shouldOpen;
+  if (elements.sidebar.inert) elements.sidebar.setAttribute("aria-hidden", "true");
+  else elements.sidebar.removeAttribute("aria-hidden");
+  if (shouldOpen) requestAnimationFrame(() => (elements.closeDrawer ?? drawerFocusableElements()[0])?.focus());
+  else if (restoreFocus && drawerReturnFocus instanceof HTMLElement && drawerReturnFocus.isConnected) {
+    requestAnimationFrame(() => drawerReturnFocus.focus());
+  }
 }
 
 function setView(view, { scroll = false } = {}) {
@@ -642,6 +762,7 @@ function setView(view, { scroll = false } = {}) {
   updateUrl();
   setDrawer(false);
   if (state.view === "study" && state.sessionWords.length === 0 && state.words.length > 0) startStudySession();
+  if (state.view === "library" && state.words.length > 0) renderLibrary();
   if (scroll) scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -651,17 +772,22 @@ function collapseAllWords() {
 }
 
 function configureControls() {
+  setDrawer(false, { restoreFocus: false });
   elements.search.value = state.query;
   elements.sessionSize.value = String(state.sessionSize);
   for (const button of document.querySelectorAll("[data-view-button]")) {
     button.addEventListener("click", () => setView(button.dataset.viewButton));
     button.addEventListener("dblclick", () => setView(button.dataset.viewButton, { scroll: true }));
   }
+  let searchTimer = null;
   elements.search.addEventListener("input", () => {
-    state.query = elements.search.value;
-    state.page = 1;
-    updateUrl();
-    renderLibrary();
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      state.query = elements.search.value;
+      state.page = 1;
+      updateUrl();
+      renderLibrary();
+    }, 150);
   });
   for (const button of elements.filterBar.querySelectorAll("button[data-filter]")) {
     button.addEventListener("click", () => {
@@ -674,16 +800,19 @@ function configureControls() {
   elements.sessionSize.addEventListener("change", () => {
     state.sessionSize = Number.parseInt(elements.sessionSize.value, 10);
     try { localStorage.setItem("kaoyan.vocabulary.sessionSize", String(state.sessionSize)); } catch {}
-    startStudySession();
+    startStudySession({ rotate: true });
   });
-  document.querySelector("#restartSession").addEventListener("click", startStudySession);
-  document.querySelector("#studyVisibleWords").addEventListener("click", () => {
-    state.studyPoolIds = visibleWords().map((word) => word.id);
+  document.querySelector("#restartSession").addEventListener("click", () => startStudySession({ rotate: true }));
+  elements.studyVisibleWords.addEventListener("click", () => {
+    const filtered = visibleWords();
+    if (filtered.length === 0) return;
+    state.studyPoolIds = filtered.map((word) => word.id);
     setView("study", { scroll: true });
-    startStudySession();
+    startStudySession({ rotate: true });
   });
   document.querySelector("#collapseAllWords").addEventListener("click", collapseAllWords);
-  document.querySelector("#openVocabDrawer").addEventListener("click", () => setDrawer(true));
+  elements.openDrawer.addEventListener("click", () => setDrawer(true));
+  elements.closeDrawer.addEventListener("click", () => setDrawer(false));
   elements.shade.addEventListener("click", () => setDrawer(false));
   document.querySelector("#vocabSidebarCollapse").addEventListener("click", () => {
     const collapsed = !elements.shell.classList.contains("sidebar-collapsed");
@@ -697,8 +826,24 @@ function configureControls() {
   elements.shell.classList.toggle("sidebar-collapsed", collapsed);
   document.querySelector("#vocabSidebarCollapse").setAttribute("aria-expanded", String(!collapsed));
   document.querySelector("#vocabSidebarCollapseLabel").textContent = collapsed ? "展开功能栏" : "收起功能栏";
+  addEventListener("resize", () => {
+    if (!isNarrowLayout()) setDrawer(false, { restoreFocus: false });
+  }, { passive: true });
   addEventListener("keydown", (event) => {
     if (event.key === "Escape") setDrawer(false);
+    if (event.key === "Tab" && elements.shell.classList.contains("drawer-open")) {
+      const focusable = drawerFocusableElements();
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable.at(-1);
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
     if (event.key === " " && state.view === "study" && !state.studyRevealed && !/^(INPUT|SELECT|TEXTAREA|BUTTON)$/u.test(document.activeElement?.tagName ?? "")) {
       event.preventDefault();
       state.studyRevealed = true;
@@ -735,11 +880,18 @@ async function start() {
   configureControls();
   setView(state.view);
   try {
-    const [{ words, version, mode }, records] = await Promise.all([loadVocabularyData(), listWordProgress()]);
+    const { words, version, mode } = await loadVocabularyData();
+    let records = [];
+    try {
+      records = await listWordProgress() ?? [];
+    } catch (error) {
+      announceAction(`词库可以正常学习，但本机进度暂时无法读取：${error.message}`);
+    }
     state.words = words;
     state.version = version;
     state.mode = mode;
-    state.progress = new Map((records ?? []).map((record) => [record.wordId, record]));
+    state.progress = new Map(records.map((record) => [record.wordId, record]));
+    state.searchIndex = new Map(words.map((word) => [word.id, searchTextForWord(word)]));
     elements.status.textContent = `${mode === "preview" ? "预览" : "正式"}词库 · ${words.length} 词 · v${version.contentVersion}`;
     renderSideStats();
     renderLibrary();

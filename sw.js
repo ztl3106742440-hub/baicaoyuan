@@ -1,6 +1,6 @@
 const CACHE_PREFIX = "kaoyan-english";
-const SHELL_CACHE = `${CACHE_PREFIX}-shell-v4-11`;
-const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-v4-11`;
+const SHELL_CACHE = `${CACHE_PREFIX}-shell-v5-1`;
+const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-v5-1`;
 const scopeUrl = new URL(self.registration.scope);
 const shellPaths = [
   "./",
@@ -22,6 +22,7 @@ const shellPaths = [
   "./assets/js/storage.js",
   "./assets/js/vocabulary-data.js",
   "./assets/js/vocabulary-app.js",
+  "./assets/js/word-scheduler.js",
   "./assets/js/study-data.js",
   "./assets/js/learning-shell.js",
   "./assets/js/networks-app.js",
@@ -47,33 +48,41 @@ const publishedManifests = [
   { path: "./study-version.json", dataKey: "studyData" },
 ];
 
+async function cachePublishedData(runtime, descriptor) {
+  const manifestUrl = new URL(descriptor.path, scopeUrl);
+  const manifestResponse = await fetch(new Request(manifestUrl, { cache: "no-store" }));
+  if (manifestResponse.status === 404) return;
+  if (!manifestResponse.ok) throw new Error(`Could not cache ${manifestUrl.pathname}`);
+  const manifest = await manifestResponse.clone().json();
+  const relativeDataUrl = manifest?.[descriptor.dataKey]?.url;
+  if (typeof relativeDataUrl !== "string" || relativeDataUrl.length === 0) {
+    throw new Error(`Invalid ${descriptor.dataKey} manifest`);
+  }
+  const dataUrl = new URL(relativeDataUrl, manifestUrl);
+  const dataResponse = await fetch(new Request(dataUrl, { cache: "no-store" }));
+  if (!dataResponse.ok) throw new Error(`Could not cache ${dataUrl.pathname}`);
+  await Promise.all([
+    runtime.put(manifestUrl.href, manifestResponse),
+    runtime.put(dataUrl.href, dataResponse),
+  ]);
+}
+
 async function precachePublishedData() {
   const runtime = await caches.open(RUNTIME_CACHE);
-  for (const descriptor of publishedManifests) {
-    const manifestUrl = new URL(descriptor.path, scopeUrl);
-    const manifestResponse = await fetch(new Request(manifestUrl, { cache: "no-store" }));
-    if (manifestResponse.status === 404) continue;
-    if (!manifestResponse.ok) throw new Error(`Could not cache ${manifestUrl.pathname}`);
-    const manifest = await manifestResponse.clone().json();
-    const relativeDataUrl = manifest?.[descriptor.dataKey]?.url;
-    if (typeof relativeDataUrl !== "string" || relativeDataUrl.length === 0) {
-      throw new Error(`Invalid ${descriptor.dataKey} manifest`);
-    }
-    const dataUrl = new URL(relativeDataUrl, manifestUrl);
-    const dataResponse = await fetch(dataUrl);
-    if (!dataResponse.ok) throw new Error(`Could not cache ${dataUrl.pathname}`);
-    await Promise.all([
-      runtime.put(manifestUrl.href, manifestResponse),
-      runtime.put(dataUrl.href, dataResponse),
-    ]);
+  const results = await Promise.allSettled(
+    publishedManifests.map((descriptor) => cachePublishedData(runtime, descriptor)),
+  );
+  for (const result of results) {
+    if (result.status === "rejected") console.warn("Published study data was not precached", result.reason);
   }
 }
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(Promise.all([
-    caches.open(SHELL_CACHE).then((cache) => cache.addAll(shellUrls)),
-    precachePublishedData(),
-  ]));
+  event.waitUntil((async () => {
+    const shell = await caches.open(SHELL_CACHE);
+    await shell.addAll(shellUrls);
+    await precachePublishedData();
+  })());
 });
 
 self.addEventListener("activate", (event) => {
@@ -92,8 +101,10 @@ async function networkFirst(request) {
     const response = await fetch(request);
     if (response.ok) await cache.put(request, response.clone());
     return response;
-  } catch {
-    return (await cache.match(request)) ?? (await caches.match(request));
+  } catch (error) {
+    const cached = (await cache.match(request)) ?? (await caches.match(request));
+    if (cached) return cached;
+    throw error;
   }
 }
 
@@ -108,6 +119,30 @@ async function cacheFirst(request) {
   return response;
 }
 
+function navigationFallbackPath(pathname) {
+  const relativePath = pathname.startsWith(scopeUrl.pathname)
+    ? pathname.slice(scopeUrl.pathname.length)
+    : pathname.replace(/^\/+/, "");
+  if (relativePath.startsWith("writing/part-a")) return "./writing/part-a/index.html";
+  if (relativePath.startsWith("writing/part-b")) return "./writing/part-b/index.html";
+  if (relativePath.startsWith("vocabulary/networks")) return "./vocabulary/networks/index.html";
+  if (relativePath.startsWith("vocabulary/reading")) return "./vocabulary/reading/index.html";
+  if (relativePath.startsWith("vocabulary")) return "./vocabulary/index.html";
+  return "./index.html";
+}
+
+async function navigationNetworkFirst(request, url) {
+  try {
+    return await networkFirst(request);
+  } catch {
+    const exactRoute = await caches.match(request, { ignoreSearch: true });
+    if (exactRoute) return exactRoute;
+    const fallbackUrl = new URL(navigationFallbackPath(url.pathname), scopeUrl);
+    return (await caches.match(fallbackUrl, { ignoreSearch: true }))
+      ?? (await caches.match(new URL("./index.html", scopeUrl), { ignoreSearch: true }));
+  }
+}
+
 self.addEventListener("fetch", (event) => {
   const request = event.request;
   if (request.method !== "GET") return;
@@ -119,13 +154,17 @@ self.addEventListener("fetch", (event) => {
     return;
   }
   if (request.mode === "navigate") {
-    event.respondWith((async () => {
-      const response = await networkFirst(request);
-      return response ?? caches.match(new URL("./writing/part-b/index.html", scopeUrl));
-    })());
+    event.respondWith(navigationNetworkFirst(request, url));
     return;
   }
-  event.respondWith(cacheFirst(request));
+  const isImmutableData = /\/data\/(?:words|writing|study)(?:\.preview)?\.[a-f0-9]{64}\.json$/u.test(url.pathname);
+  if (isImmutableData || request.destination === "image" || request.destination === "font") {
+    event.respondWith(cacheFirst(request));
+    return;
+  }
+  const isMutableAppAsset = ["script", "style", "manifest", "worker"].includes(request.destination)
+    || /\.(?:html|js|css|webmanifest)$/u.test(url.pathname);
+  event.respondWith(isMutableAppAsset ? networkFirst(request) : cacheFirst(request));
 });
 
 self.addEventListener("message", (event) => {

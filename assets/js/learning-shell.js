@@ -1,18 +1,37 @@
 export function configureLearningShell({ collapseSelector = "#mainContent details[open]" } = {}) {
   const shell = document.querySelector("#vocabShell");
   const shade = document.querySelector("#drawerShade");
+  const sidebar = document.querySelector("#vocabSidebar");
+  const workspace = document.querySelector("#mainContent");
   const openButton = document.querySelector("#openVocabDrawer");
+  const closeButton = document.querySelector("#closeVocabDrawer");
   const collapseButton = document.querySelector("#collapseAllStudy");
   const sidebarButton = document.querySelector("#vocabSidebarCollapse");
   const sidebarLabel = document.querySelector("#vocabSidebarCollapseLabel");
 
-  const setDrawer = (open) => {
-    shell?.classList.toggle("drawer-open", open);
-    if (shade) shade.hidden = !open;
-    document.body.style.overflow = open ? "hidden" : "";
-    openButton?.setAttribute("aria-expanded", String(open));
+  const isNarrow = () => matchMedia("(max-width: 900px)").matches;
+  let returnFocus = null;
+  const focusable = () => [...(sidebar?.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])') ?? [])]
+    .filter((element) => !element.hidden && element.getClientRects().length > 0);
+  const setDrawer = (open, { restoreFocus = true } = {}) => {
+    const shouldOpen = Boolean(open && isNarrow());
+    if (shouldOpen) returnFocus = document.activeElement;
+    shell?.classList.toggle("drawer-open", shouldOpen);
+    if (shade) shade.hidden = !shouldOpen;
+    document.body.style.overflow = shouldOpen ? "hidden" : "";
+    openButton?.setAttribute("aria-expanded", String(shouldOpen));
+    if (sidebar) {
+      sidebar.inert = isNarrow() && !shouldOpen;
+      if (sidebar.inert) sidebar.setAttribute("aria-hidden", "true");
+      else sidebar.removeAttribute("aria-hidden");
+    }
+    if (workspace) workspace.inert = shouldOpen;
+    if (shouldOpen) requestAnimationFrame(() => (closeButton ?? focusable()[0])?.focus());
+    else if (restoreFocus && returnFocus instanceof HTMLElement && returnFocus.isConnected) requestAnimationFrame(() => returnFocus.focus());
   };
+  setDrawer(false, { restoreFocus: false });
   openButton?.addEventListener("click", () => setDrawer(true));
+  closeButton?.addEventListener("click", () => setDrawer(false));
   shade?.addEventListener("click", () => setDrawer(false));
   collapseButton?.addEventListener("click", () => {
     for (const details of document.querySelectorAll(collapseSelector)) details.open = false;
@@ -36,7 +55,24 @@ export function configureLearningShell({ collapseSelector = "#mainContent detail
       scrollTo({ top: 0, behavior: "smooth" });
     });
   }
-  addEventListener("keydown", (event) => { if (event.key === "Escape") setDrawer(false); });
+  addEventListener("resize", () => {
+    if (!isNarrow()) setDrawer(false, { restoreFocus: false });
+  }, { passive: true });
+  addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setDrawer(false);
+    if (event.key !== "Tab" || !shell?.classList.contains("drawer-open")) return;
+    const controls = focusable();
+    if (controls.length === 0) return;
+    const first = controls[0];
+    const last = controls.at(-1);
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  });
 }
 
 export async function configureLearningServiceWorker() {

@@ -77,6 +77,7 @@
       </header>
 
       <div class="content-status" id="contentStatus" role="status">正在读取教材数据…</div>
+      <p class="action-status" id="writingActionStatus" role="status" aria-live="polite"></p>
       <article class="writing-reader">
         <section class="learning-section" id="b-overview" data-search-title="大作文概览">
           <header class="section-heading"><span class="section-number">01</span><div><p>FORM FIRST</p><h2>大作文概览：20 分，材料形式决定开局</h2></div></header>
@@ -132,9 +133,9 @@
   <dialog class="data-dialog" id="dataDialog" aria-labelledby="dataTitle">
     <form method="dialog" class="search-head"><strong id="dataTitle">教材与学习记录</strong><button type="submit" aria-label="关闭数据中心">×</button></form>
     <div class="data-dialog-body">
-      <p>公开网页会自动读取最新教材；下面的文件用于离线留档、换设备或迁移浏览器。</p>
+      <p>公开网页会自动读取最新教材；学习记录只保存在当前平板浏览器中，不会自动同步。下面的文件功能仅作可选留档。</p>
       <section><h2>教材</h2><button type="button" id="downloadTextbook">下载当前作文教材 JSON</button><small>只包含公开教学内容，不包含个人学习记录。</small></section>
-      <section><h2>学习记录</h2><div class="data-actions"><button type="button" id="exportStudyData">导出学习记录</button><button type="button" id="chooseStudyData">导入学习记录</button></div><input id="importStudyData" type="file" accept="application/json,.json" hidden><small>导入采用合并方式，不会先清空本机记录。</small></section>
+      <section><h2>本机记录（可选）</h2><div class="data-actions"><button type="button" id="exportStudyData">导出本机记录</button><button type="button" id="chooseStudyData">补充导入记录</button></div><input id="importStudyData" type="file" accept="application/json,.json" hidden><small>只新增本机没有的记录；相同 ID 始终保留当前平板版本，不会覆盖。</small></section>
       <p class="data-status" id="dataStatus" role="status">尚未执行数据操作。</p>
     </div>
   </dialog>

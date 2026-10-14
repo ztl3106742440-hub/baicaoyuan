@@ -323,6 +323,9 @@ summary { cursor: pointer; }
 .content-status.is-demo { border-color: #c8914b; background: #f5e8cd; color: #735a36; }
 .content-status.is-ready { border-color: var(--accent); }
 .content-status.is-error { border-color: var(--warning); background: #f7e3df; color: var(--warning); }
+.action-status { display: none; margin: 10px clamp(16px, 4vw, 54px) 0; padding: 10px 13px; border: 1px solid #d9aaa4; border-radius: 10px; background: #fff1ef; color: #793a35; font-size: 12px; font-weight: 750; }
+.action-status:not(:empty) { display: block; }
+.action-status[data-tone="success"] { border-color: #b8d4c0; background: #eff8f1; color: #28573a; }
 .chapter-browser {
   position: sticky;
   top: 60px;
@@ -715,7 +718,7 @@ summary { cursor: pointer; }
 .data-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .data-status { padding: 10px 12px; border-left: 4px solid var(--accent); background: var(--soft); color: var(--ink) !important; }
 .update-banner { position: fixed; inset: auto 18px max(18px, env(safe-area-inset-bottom)) auto; z-index: 90; display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-radius: 12px; background: var(--ink); color: var(--surface); box-shadow: 0 16px 50px rgb(0 0 0 / 22%); font-size: 12px; }
-.update-banner button { min-height: 40px; border: 0; border-radius: 8px; background: var(--accent); color: var(--accent-ink); }
+.update-banner button { min-height: 44px; border: 0; border-radius: 8px; background: var(--accent); color: var(--accent-ink); }
 .drawer-shade { display: none; }
 
 /* Theme A: warm nature reading room */
@@ -952,6 +955,7 @@ html.large-type .relation-link { font-size: 14px; }
   html[data-theme="newspaper"] .writing-hero::before { inset: 13px 13px auto; font-size: 8px; letter-spacing: .1em; }
   html[data-theme="collage"] .writing-hero::after { font-size: 70px; left: 18px; }
   .content-status { margin: 12px 11px 0; }
+  .action-status { margin: 10px 11px 0; }
   .chapter-browser { top: 56px; width: calc(100% - 22px); margin-top: 9px; padding: 7px; border-radius: 13px; }
   .chapter-arrow { min-width: 62px; padding-inline: 7px; }
   .chapter-tab { padding-inline: 9px; }
