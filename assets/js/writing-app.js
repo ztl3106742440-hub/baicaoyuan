@@ -13,6 +13,11 @@ import {
   searchTextForEntry,
   sentencesForPromptParagraph,
 } from "./writing-data.js";
+import {
+  activateWritingOverlayLesson,
+  renderWritingOverlays,
+  writingOverlaySearchItems,
+} from "./writing-overlays.js";
 
 const part = document.body.dataset.part;
 const qaMode = new URLSearchParams(location.search).get("qa") === "1";
@@ -69,6 +74,7 @@ const themeInformation = {
   },
 };
 const staticSearchItems = [
+  ["A", "a-core", "核心背诵与跨题迁移", "建议邮件、招募通知、填槽、迁移、自测"],
   ["A", "a-overview", "认识小作文", "10分、交际任务、格式与语气"],
   ["A", "a-five-steps", "先判题，再写", "收信人、目的、任务、语气、格式"],
   ["A", "a-navigation", "功能与体裁二维导航", "邮件、书信、通知、回复、邀请、建议"],
@@ -77,6 +83,7 @@ const staticSearchItems = [
   ["A", "a-expressions", "小作文功能句补充库", "称呼、目的、细节、礼貌结尾"],
   ["A", "a-topics", "小作文主题思路", "校园活动、沟通、建议与具体行动"],
   ["A", "a-takeaways", "小作文本节必带走", "格式自查、改写练习"],
+  ["B", "b-core", "核心背诵与跨题迁移", "图画母版、图表母版、填槽、迁移、自测"],
   ["B", "b-overview", "大作文概览", "20分、图画、图表、图文混合"],
   ["B", "b-routes", "三类材料审题路线", "事实、单位、比较、寓意、论证"],
   ["B", "b-templates", "图画与图表核心母版", "三段骨架、槽位、迁移"],
@@ -133,9 +140,9 @@ function partsForEntry(entry) {
   return entry?.examPart === "both" ? ["A", "B"] : [entry?.examPart].filter(Boolean);
 }
 
-function createEntityFrame(entry, overline) {
+function createEntityFrame(entry, overline, { domIdPrefix = "" } = {}) {
   const card = element("article", "entity-card");
-  card.id = `entry-${entry.id}`;
+  card.id = `${domIdPrefix}entry-${entry.id}`;
   card.dataset.entryId = entry.id;
   card.dataset.entryKind = entry.kind;
   const head = element("header", "entity-head");
@@ -514,8 +521,8 @@ function appendLinkedTemplateCallout(card, entry) {
   card.append(callout);
 }
 
-function createTemplateCard(entry) {
-  const card = createEntityFrame(entry, "TEMPLATE");
+function createTemplateCard(entry, options = {}) {
+  const card = createEntityFrame(entry, "TEMPLATE", options);
   const content = createTeachingDetails("点击展开 · 完整母版、槽位替换与逐句批注", "template-content");
   const article = element("div", "template-article");
   const toolbar = element("div", "template-toolbar");
@@ -1179,10 +1186,11 @@ function configureFontSize() {
   });
 }
 
-function routeFor(itemPart, anchor, entryId = null) {
+function routeFor(itemPart, anchor, entryId = null, lessonId = null) {
   if (entryId && entryIndex.has(entryId)) return routeForEntry(entryIndex.get(entryId));
-  if (itemPart === part) return `#${anchor}`;
-  return itemPart === "A" ? `../part-a/#${anchor}` : `../part-b/#${anchor}`;
+  const lessonQuery = lessonId ? `?lesson=${encodeURIComponent(lessonId)}` : "";
+  if (itemPart === part) return `${lessonQuery}#${anchor}`;
+  return itemPart === "A" ? `../part-a/${lessonQuery}#${anchor}` : `../part-b/${lessonQuery}#${anchor}`;
 }
 
 function dynamicSearchItems(entries) {
@@ -1204,11 +1212,11 @@ function dynamicSearchItems(entries) {
   return result;
 }
 
-function configureSearch(entries) {
+function configureSearch(entries, overlayItems = []) {
   const dialog = document.querySelector("#searchDialog");
   const input = document.querySelector("#searchInput");
   const output = document.querySelector("#searchResults");
-  const index = [...staticSearchItems, ...dynamicSearchItems(entries)];
+  const index = [...staticSearchItems, ...overlayItems, ...dynamicSearchItems(entries)];
   function renderResults() {
     const query = input.value.trim().toLocaleLowerCase("zh-CN");
     const matches = index.filter((item) => !query || item.searchText.includes(query)).slice(0, 30);
@@ -1218,7 +1226,7 @@ function configureSearch(entries) {
     }
     output.replaceChildren(...matches.map((item) => {
       const link = element("a", "search-result");
-      link.href = routeFor(item.part, item.anchor, item.entryId);
+      link.href = routeFor(item.part, item.anchor, item.entryId, item.overlayChapterId);
       link.append(
         element("span", "", `PART ${item.part} · ${partLabels[item.part]} · ${item.type}`),
         element("strong", "", item.title),
@@ -1229,7 +1237,10 @@ function configureSearch(entries) {
         if (item.part !== part) return;
         event.preventDefault();
         if (item.entryId) goToEntry(item.entryId, { focus: true, historyMode: "push" });
-        else showChapter(item.anchor, { historyMode: "push", focus: true, scroll: true });
+        else {
+          showChapter(item.anchor, { historyMode: "push", focus: true, scroll: true });
+          if (item.overlayChapterId) activateWritingOverlayLesson(item.overlayChapterId);
+        }
       });
       return link;
     }));
@@ -1353,11 +1364,22 @@ async function initialize() {
   activeBundle = result.bundle;
   allEntries = result.bundle.entries;
   entryIndex = new Map(allEntries.map((entry) => [entry.id, entry]));
+  const overlays = Array.isArray(result.bundle.overlays) ? result.bundle.overlays : [];
   const requestedEntryId = requestedEntryIdFromLocation();
   renderEntryHosts(allEntries, requestedEntryId);
+  renderWritingOverlays({
+    overlays,
+    part,
+    entryIndex,
+    renderTemplateCard: createTemplateCard,
+    onOpenEntry: (entryId) => goToEntry(entryId, { focus: true, historyMode: "push" }),
+  });
   updateContentStatus(result.mode, result.bundle, result.failures);
   configureChapterNavigation(requestedEntryId);
-  configureSearch(allEntries);
+  const requestedLessonId = new URLSearchParams(location.search).get("lesson");
+  if (requestedLessonId) activateWritingOverlayLesson(requestedLessonId);
+  const overlaySearchItems = ["A", "B"].flatMap((targetPart) => writingOverlaySearchItems(overlays, targetPart));
+  configureSearch(allEntries, overlaySearchItems);
   configureDataCenter();
   restorePositionAfterRender(requestedEntryId);
   if (!qaMode) configureServiceWorker();

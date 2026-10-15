@@ -1,12 +1,12 @@
 {
-  "appVersion": "0.2.0",
-  "cacheVersion": "writing-0.2.0-130e6c0370ba284c",
-  "generatedAt": "2026-10-11T00:00:00+08:00",
+  "appVersion": "0.5.0",
+  "cacheVersion": "writing-0.5.0-bf8b0cd37582a516",
+  "generatedAt": "2026-10-15T20:00:00+08:00",
   "mode": "preview",
   "schemaVersion": 1,
-  "writingContentVersion": 2,
+  "writingContentVersion": 4,
   "writingData": {
-    "bytes": 473390,
+    "bytes": 676940,
     "entryCount": 80,
     "kindCounts": {
       "expression": 40,
@@ -14,7 +14,13 @@
       "template": 7,
       "topic": 17
     },
-    "sha256": "130e6c0370ba284cec3367f46ebafd892c352e682be571fa17d52f80461a3a2b",
-    "url": "data/writing.preview.130e6c0370ba284cec3367f46ebafd892c352e682be571fa17d52f80461a3a2b.json"
+    "overlayCount": 3,
+    "overlayFormats": [
+      "baicaoyuan-v7-study-overlay",
+      "baicaoyuan-v7.1-prompt-literacy-overlay",
+      "baicaoyuan-v7.2-theme-body-overlay"
+    ],
+    "sha256": "bf8b0cd37582a51644fcaca4a35246db0a67f7300e40f62979fb91829c613c62",
+    "url": "data/writing.preview.bf8b0cd37582a51644fcaca4a35246db0a67f7300e40f62979fb91829c613c62.json"
   }
 }
