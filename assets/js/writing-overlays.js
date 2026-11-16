@@ -9,6 +9,20 @@ const CORE_TRANSFER_FORMAT = "baicaoyuan-v7-study-overlay";
 const PROMPT_LITERACY_FORMAT = "baicaoyuan-v7.1-prompt-literacy-overlay";
 
 const lessonActivators = new Map();
+const SECTION_ALIASES = new Map([
+  ["a-five-steps", "a-overview"],
+  ["a-navigation", "a-overview"],
+]);
+const RETIRED_SECTIONS = new Set(["a-takeaways", "b-takeaways"]);
+
+function visibleChapterTarget(chapter, { requireElement = false } = {}) {
+  for (const requestedId of chapter.targetSectionIds) {
+    if (RETIRED_SECTIONS.has(requestedId)) continue;
+    const targetId = SECTION_ALIASES.get(requestedId) ?? requestedId;
+    if (!requireElement || document.getElementById(targetId)) return targetId;
+  }
+  return null;
+}
 
 function element(tag, className = "", text = null) {
   const node = document.createElement(tag);
@@ -526,7 +540,7 @@ function renderLiteracyOverlay(overlay, part, entryIndex, onOpenEntry) {
   const chapters = overlay.chapters.filter((chapter) => chapter.part === part);
   const grouped = new Map();
   for (const chapter of chapters) {
-    const targetId = chapter.targetSectionIds.find((id) => document.getElementById(id));
+    const targetId = visibleChapterTarget(chapter, { requireElement: true });
     if (!targetId) continue;
     if (!grouped.has(targetId)) grouped.set(targetId, []);
     grouped.get(targetId).push(chapter);
@@ -580,9 +594,11 @@ export function writingOverlaySearchItems(overlays, part) {
     searchText: "核心背诵 跨题迁移 填槽 加分句 自测".toLocaleLowerCase("zh-CN"),
   }];
   for (const chapter of literacy?.chapters?.filter((item) => item.part === part) ?? []) {
+    const anchor = visibleChapterTarget(chapter);
+    if (!anchor) continue;
     result.push({
       part,
-      anchor: chapter.targetSectionIds[0],
+      anchor,
       title: chapter.title,
       summary: chapter.bodyMarkdown.replace(/[#*`|>\[\]]/gu, " ").replace(/\s+/gu, " ").slice(0, 110),
       type: "英文审题课",

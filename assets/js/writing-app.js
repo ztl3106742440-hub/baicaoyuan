@@ -35,6 +35,10 @@ const kindLabels = { template: "母版", expression: "功能句", topic: "主题
 const kindSectionSuffix = { template: "templates", expression: "expressions", topic: "topics", prompt: "prompts" };
 const entityPageSizes = { template: 1, prompt: 1, expression: 4, topic: 2 };
 const priorityLabels = { "must-memorize": "必须背", recommended: "推荐", understand: "理解" };
+const chapterAliases = new Map([
+  ["a-five-steps", "a-overview"],
+  ["a-navigation", "a-overview"],
+]);
 const reviewOptions = [
   ["new", "未学"],
   ["fuzzy", "模糊"],
@@ -75,14 +79,11 @@ const themeInformation = {
 };
 const staticSearchItems = [
   ["A", "a-core", "核心背诵与跨题迁移", "建议邮件、招募通知、填槽、迁移、自测"],
-  ["A", "a-overview", "认识小作文", "10分、交际任务、格式与语气"],
-  ["A", "a-five-steps", "先判题，再写", "收信人、目的、任务、语气、格式"],
-  ["A", "a-navigation", "功能与体裁二维导航", "邮件、书信、通知、回复、邀请、建议"],
+  ["A", "a-overview", "审题与体裁", "收信人、目的、任务、语气、格式、邮件与通知"],
   ["A", "a-templates", "四组核心功能母版", "邀请安排、建议推荐、回复说明、通知招募"],
   ["A", "a-prompts", "小作文代表题与逐句精讲", "任务点、原创范文、难词、短评"],
   ["A", "a-expressions", "小作文功能句补充库", "称呼、目的、细节、礼貌结尾"],
   ["A", "a-topics", "小作文主题思路", "校园活动、沟通、建议与具体行动"],
-  ["A", "a-takeaways", "小作文本节必带走", "格式自查、改写练习"],
   ["B", "b-core", "核心背诵与跨题迁移", "图画母版、图表母版、填槽、迁移、自测"],
   ["B", "b-overview", "大作文概览", "20分、图画、图表、图文混合"],
   ["B", "b-routes", "三类材料审题路线", "事实、单位、比较、寓意、论证"],
@@ -90,7 +91,6 @@ const staticSearchItems = [
   ["B", "b-expressions", "大作文功能句库", "数字、趋势、原因、意义、让步、措施"],
   ["B", "b-prompts", "大作文题卡逐句精讲", "审题、提纲、范文、批注"],
   ["B", "b-topics", "主题补充素材", "科技、成长、教育、文化、公共环境"],
-  ["B", "b-takeaways", "大作文本节必带走", "数字表达、论证逻辑、考场自查"],
 ].map(([itemPart, anchor, title, summary]) => ({
   part: itemPart,
   anchor,
@@ -1045,9 +1045,11 @@ function requestedEntryIdFromLocation() {
 function chapterFromLocation(requestedEntryId = null) {
   if (requestedEntryId && entryIndex.has(requestedEntryId)) return sectionForEntry(entryIndex.get(requestedEntryId));
   const hashId = decodeURIComponent(location.hash.replace(/^#/u, ""));
-  if (currentPartSections.some((section) => section.id === hashId)) return hashId;
+  const normalizedHashId = chapterAliases.get(hashId) ?? hashId;
+  if (currentPartSections.some((section) => section.id === normalizedHashId)) return normalizedHashId;
   const saved = readPosition();
-  if (saved?.anchor && currentPartSections.some((section) => section.id === saved.anchor)) return saved.anchor;
+  const savedAnchor = chapterAliases.get(saved?.anchor) ?? saved?.anchor;
+  if (savedAnchor && currentPartSections.some((section) => section.id === savedAnchor)) return savedAnchor;
   return currentPartSections[0]?.id;
 }
 

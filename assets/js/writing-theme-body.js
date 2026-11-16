@@ -31,6 +31,17 @@ function openSection(sectionId) {
   else document.getElementById(sectionId)?.scrollIntoView({ block: "start" });
 }
 
+function insertBeforeSupplement(target, node) {
+  const supplement = target.querySelector(".supplement-library");
+  if (supplement) supplement.before(node);
+  else target.querySelector(".entity-list")?.before(node);
+  if (!node.isConnected) target.append(node);
+}
+
+export function stableExpressionGroupId(items, index) {
+  return `expression-group-${items[0]?.id ?? index + 1}`;
+}
+
 function createModeDeck(items, { className, label, initialId = null } = {}) {
   const root = element("div", className);
   const tabs = element("div", `${className}-tabs`);
@@ -105,7 +116,10 @@ function createItemBrowser(items, { label, renderItem, compact = false } = {}) {
       option.value = candidate.id;
       return option;
     }));
-    if (item) select.value = item.id;
+    if (item) {
+      select.value = item.id;
+      select.selectedIndex = activeIndex;
+    }
     previous.disabled = activeIndex <= 0;
     next.disabled = activeIndex >= visibleItems.length - 1;
     status.textContent = visibleItems.length > 0 ? `${activeIndex + 1} / ${visibleItems.length}` : "0 / 0";
@@ -384,6 +398,7 @@ function renderTopicCourse(overlay, part, onOpenExpressions) {
   course.dataset.v72Injected = "true";
   const header = element("header", "theme-body-course-head");
   header.append(
+    element("span", "content-zone-badge primary", "主学习区"),
     element("p", "overlay-kicker", "V7.2 · CONTENT BEFORE ORNAMENT"),
     element("h3", "", part === "A" ? "主体内容工作台" : "论证链工作台"),
     element("p", "", part === "A" ? "先选场景和交际任务，再取具体内容、收益与限制；一次只显示一张卡。" : "按观点—机制—例子—限定组织主体段；一次只处理一条论证链。"),
@@ -479,8 +494,7 @@ function renderTopicCourse(overlay, part, onOpenExpressions) {
   ], { className: `theme-body-mode-${part.toLowerCase()}`, label: `${part} 部分主题主体学习方式` });
 
   course.append(header, modeDeck.root, sourceDetails(overlay));
-  target.querySelector(".entity-list")?.before(course);
-  if (!course.isConnected) target.append(course);
+  insertBeforeSupplement(target, course);
   return { targetId, modeDeck, topicBrowser, essayBrowser, drillBrowser };
 }
 
@@ -494,11 +508,17 @@ function renderExpressionCourse(overlay, part) {
     if (!grouped.has(item.section)) grouped.set(item.section, []);
     grouped.get(item.section).push(item);
   }
-  const groups = [...grouped].map(([section, items]) => ({ id: section.toLocaleLowerCase("en").replace(/[^a-z0-9]+/gu, "-"), label: section.replace(/^[AB]-/u, ""), section, items }));
+  const groups = [...grouped].map(([section, items], index) => ({
+    id: stableExpressionGroupId(items, index),
+    label: section.replace(/^[AB]-/u, ""),
+    section,
+    items,
+  }));
   const course = element("section", "theme-expression-course");
   course.dataset.v72Injected = "true";
   const header = element("header", "theme-expression-course-head");
   header.append(
+    element("span", "content-zone-badge primary", "主背区"),
     element("p", "overlay-kicker", "V7.2 · FUNCTIONAL SENTENCES"),
     element("h3", "", part === "A" ? "把主体内容写成句子" : "把论证链写成句子"),
     element("p", "", "按段落功能分组；主背句直接显示，备用句和错误边界按需展开。"),
@@ -509,8 +529,7 @@ function renderExpressionCourse(overlay, part) {
     compact: true,
   });
   course.append(header, browser.root);
-  target.querySelector(".entity-list")?.before(course);
-  if (!course.isConnected) target.append(course);
+  insertBeforeSupplement(target, course);
   for (const group of groups) {
     themeBodyActivators.set(`v72-expressions-${group.id}`, () => { openSection(targetId); browser.activate(group.id); });
   }
