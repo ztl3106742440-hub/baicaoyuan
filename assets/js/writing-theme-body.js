@@ -25,12 +25,6 @@ function button(text, className = "") {
   return node;
 }
 
-function openSection(sectionId) {
-  const link = document.querySelector(`#sectionNav a[href="#${sectionId}"]`);
-  if (link) link.click();
-  else document.getElementById(sectionId)?.scrollIntoView({ block: "start" });
-}
-
 function insertBeforeSupplement(target, node) {
   const supplement = target.querySelector(".supplement-library");
   if (supplement) supplement.before(node);
@@ -60,7 +54,7 @@ function createModeDeck(items, { className, label, initialId = null } = {}) {
       tab.tabIndex = active ? 0 : -1;
       panelNodes[index].hidden = !active;
     }
-    if (focus) buttons[selectedIndex]?.focus();
+    if (focus) buttons[selectedIndex]?.focus({ preventScroll: true });
   }
 
   for (const [index, item] of items.entries()) {
@@ -166,7 +160,7 @@ function sentenceGroup(title, sentences) {
   return section;
 }
 
-function scenarioCard(item, { activeFunction = "all", linkedEssay = null, onOpenEssay, onOpenExpressions } = {}) {
+function scenarioCard(item, activeFunction) {
   const article = element("article", "theme-body-card scenario-card");
   article.dataset.themeBodyId = item.id;
   const header = element("header", "theme-body-card-head");
@@ -199,20 +193,10 @@ function scenarioCard(item, { activeFunction = "all", linkedEssay = null, onOpen
   details.append(body);
   article.append(details);
 
-  const actions = element("div", "theme-card-actions");
-  if (linkedEssay) {
-    const essayButton = button("看本主题完整范文", "theme-primary-action");
-    essayButton.addEventListener("click", () => onOpenEssay(linkedEssay.id));
-    actions.append(essayButton);
-  }
-  const expressionsButton = button("去配功能句", "theme-secondary-action");
-  expressionsButton.addEventListener("click", onOpenExpressions);
-  actions.append(expressionsButton);
-  article.append(actions);
   return article;
 }
 
-function argumentCard(item, { linkedEssay = null, onOpenEssay, onOpenExpressions } = {}) {
+function argumentCard(item) {
   const article = element("article", "theme-body-card argument-card");
   article.dataset.themeBodyId = item.id;
   const header = element("header", "theme-body-card-head");
@@ -228,16 +212,6 @@ function argumentCard(item, { linkedEssay = null, onOpenEssay, onOpenExpressions
     sentenceBlock(item.nuance, "限定"),
   );
   article.append(chain, element("p", "theme-risk-note", `边界：${item.avoid}`));
-  const actions = element("div", "theme-card-actions");
-  if (linkedEssay) {
-    const essayButton = button("看本论证完整范文", "theme-primary-action");
-    essayButton.addEventListener("click", () => onOpenEssay(linkedEssay.id));
-    actions.append(essayButton);
-  }
-  const expressionsButton = button("去配论证句", "theme-secondary-action");
-  expressionsButton.addEventListener("click", onOpenExpressions);
-  actions.append(expressionsButton);
-  article.append(actions);
   return article;
 }
 
@@ -370,27 +344,7 @@ function expressionGroup(group) {
   return root;
 }
 
-function sourceDetails(overlay) {
-  const details = element("details", "theme-source-details");
-  details.append(element("summary", "", "来源、原创范围与核验状态"));
-  const note = element("p", "", "完整范文与练习均标为原创教学材料；真题资料只提供题型与主题背景，不把原创题干冒充历年原题。语言内容已做来源包内部审阅，外部事实仍保持 unverified。 ");
-  const list = element("ul");
-  for (const source of overlay.sourceReferences) {
-    const item = element("li");
-    const title = source.url ? element("a", "", source.title) : element("strong", "", source.title);
-    if (source.url) {
-      title.href = source.url;
-      title.target = "_blank";
-      title.rel = "noopener noreferrer";
-    }
-    item.append(title, document.createTextNode(`：${source.use}`));
-    list.append(item);
-  }
-  details.append(note, list);
-  return details;
-}
-
-function renderTopicCourse(overlay, part, onOpenExpressions) {
+function renderTopicCourse(overlay, part) {
   const targetId = part === "A" ? "a-topics" : "b-topics";
   const target = document.getElementById(targetId);
   if (!target) return null;
@@ -405,7 +359,6 @@ function renderTopicCourse(overlay, part, onOpenExpressions) {
   );
 
   const essays = part === "A" ? overlay.applicationEssays : overlay.picturePracticeEssays;
-  const essayIndex = new Map(essays.map((essay) => [essay.themeId, essay]));
   let topicBrowser;
   let essayBrowser;
   let drillBrowser;
@@ -434,17 +387,11 @@ function renderTopicCourse(overlay, part, onOpenExpressions) {
     materials.append(filters);
     topicBrowser = createItemBrowser(overlay.scenarioCards, {
       label: "选择 Part A 主题场景",
-      renderItem: (item) => scenarioCard(item, {
-        activeFunction: selectedFunction,
-        linkedEssay: essayIndex.get(item.id),
-        onOpenEssay: (id) => { modeDeck.activate("essays"); essayBrowser.activate(id); },
-        onOpenExpressions,
-      }),
+      renderItem: (item) => scenarioCard(item, selectedFunction),
     });
     materials.append(topicBrowser.root);
     for (const item of overlay.scenarioCards) {
       themeBodyActivators.set(item.id, () => {
-        openSection(targetId);
         selectedFunction = "all";
         for (const [candidateId, candidate] of filterButtons) candidate.setAttribute("aria-pressed", String(candidateId === "all"));
         topicBrowser.setItems(overlay.scenarioCards, item.id);
@@ -454,15 +401,11 @@ function renderTopicCourse(overlay, part, onOpenExpressions) {
   } else {
     topicBrowser = createItemBrowser(overlay.argumentChains, {
       label: "选择 Part B 论证链",
-      renderItem: (item) => argumentCard(item, {
-        linkedEssay: essayIndex.get(item.id),
-        onOpenEssay: (id) => { modeDeck.activate("essays"); essayBrowser.activate(id); },
-        onOpenExpressions,
-      }),
+      renderItem: argumentCard,
     });
     materials.append(topicBrowser.root);
     for (const item of overlay.argumentChains) {
-      themeBodyActivators.set(item.id, () => { openSection(targetId); topicBrowser.activate(item.id); modeDeck.activate("materials"); });
+      themeBodyActivators.set(item.id, () => { topicBrowser.activate(item.id); modeDeck.activate("materials"); });
     }
   }
 
@@ -471,9 +414,9 @@ function renderTopicCourse(overlay, part, onOpenExpressions) {
     label: part === "A" ? "选择小作文原创范文" : "选择大作文原创范文",
     renderItem: (essay) => essayCard(essay, part),
   });
-  essayMode.append(element("p", "theme-mode-note", "连读与逐句讲评共用同一份正文；切换模式不会再复制一遍范文。"), essayBrowser.root);
+  essayMode.append(essayBrowser.root);
   for (const essay of essays) {
-    themeBodyActivators.set(essay.id, () => { openSection(targetId); modeDeck.activate("essays"); essayBrowser.activate(essay.id); });
+    themeBodyActivators.set(essay.id, () => { modeDeck.activate("essays"); essayBrowser.activate(essay.id); });
   }
 
   const drills = overlay.drills.filter((drill) => drill.part === part);
@@ -484,7 +427,7 @@ function renderTopicCourse(overlay, part, onOpenExpressions) {
   });
   drillMode.append(element("p", "theme-mode-note", "先只看任务点完成草稿，再展开参考主体；答案默认收起。"), drillBrowser.root);
   for (const drill of drills) {
-    themeBodyActivators.set(drill.id, () => { openSection(targetId); modeDeck.activate("drills"); drillBrowser.activate(drill.id); });
+    themeBodyActivators.set(drill.id, () => { modeDeck.activate("drills"); drillBrowser.activate(drill.id); });
   }
 
   modeDeck = createModeDeck([
@@ -493,9 +436,11 @@ function renderTopicCourse(overlay, part, onOpenExpressions) {
     { id: "drills", label: `反向训练 ${drills.length}`, content: drillMode },
   ], { className: `theme-body-mode-${part.toLowerCase()}`, label: `${part} 部分主题主体学习方式` });
 
-  course.append(header, modeDeck.root, sourceDetails(overlay));
+  themeBodyActivators.set(`v72-${part.toLowerCase()}-materials`, () => modeDeck.activate("materials"));
+  themeBodyActivators.set(`v72-${part.toLowerCase()}-essays`, () => modeDeck.activate("essays"));
+  themeBodyActivators.set(`v72-${part.toLowerCase()}-drills`, () => modeDeck.activate("drills"));
+  course.append(header, modeDeck.root);
   insertBeforeSupplement(target, course);
-  return { targetId, modeDeck, topicBrowser, essayBrowser, drillBrowser };
 }
 
 function renderExpressionCourse(overlay, part) {
@@ -531,62 +476,17 @@ function renderExpressionCourse(overlay, part) {
   course.append(header, browser.root);
   insertBeforeSupplement(target, course);
   for (const group of groups) {
-    themeBodyActivators.set(`v72-expressions-${group.id}`, () => { openSection(targetId); browser.activate(group.id); });
+    themeBodyActivators.set(`v72-expressions-${group.id}`, () => browser.activate(group.id));
   }
   return { targetId, browser, groups };
-}
-
-function renderBridges(part, topicCourse) {
-  const topicId = part === "A" ? "a-topics" : "b-topics";
-  const expressionId = part === "A" ? "a-expressions" : "b-expressions";
-  const templateId = part === "A" ? "a-templates" : "b-templates";
-  const coreHost = document.querySelector('[data-writing-overlay="core-transfer"]');
-  const coreIntro = coreHost?.querySelector(".core-overlay-intro");
-  if (coreIntro) {
-    const quick = element("nav", "theme-body-quicklinks");
-    quick.dataset.v72Injected = "true";
-    quick.setAttribute("aria-label", "主体内容快捷入口");
-    quick.append(element("span", "", "母版背完，下一步"));
-    const material = button(part === "A" ? "选主题素材" : "补论证链");
-    const essays = button("连读范文");
-    const drills = button("闭卷训练");
-    material.addEventListener("click", () => { openSection(topicId); topicCourse.modeDeck.activate("materials"); });
-    essays.addEventListener("click", () => { openSection(topicId); topicCourse.modeDeck.activate("essays"); });
-    drills.addEventListener("click", () => { openSection(topicId); topicCourse.modeDeck.activate("drills"); });
-    quick.append(material, essays, drills);
-    coreIntro.after(quick);
-  }
-
-  const template = document.getElementById(templateId);
-  if (template) {
-    const bridge = element("aside", "theme-template-bridge");
-    bridge.dataset.v72Injected = "true";
-    const copy = element("div");
-    copy.append(
-      element("b", "", part === "A" ? "母版负责结构，主题卡负责把第二段写实。" : "母版负责三段结构，论证链负责让第二段不是口号。"),
-      element("span", "", "先选内容，再回母版填槽；别拿高级词给空心作文做尸体美容。"),
-    );
-    const go = button(part === "A" ? "这题写什么内容？" : "去补足论证");
-    go.addEventListener("click", () => { openSection(topicId); topicCourse.modeDeck.activate("materials"); });
-    bridge.append(copy, go);
-    template.querySelector(".entity-list")?.before(bridge);
-    if (!bridge.isConnected) template.append(bridge);
-  }
-
-  themeBodyActivators.set(`v72-${part.toLowerCase()}-materials`, () => { openSection(topicId); topicCourse.modeDeck.activate("materials"); });
-  themeBodyActivators.set(`v72-${part.toLowerCase()}-essays`, () => { openSection(topicId); topicCourse.modeDeck.activate("essays"); });
-  themeBodyActivators.set(`v72-${part.toLowerCase()}-drills`, () => { openSection(topicId); topicCourse.modeDeck.activate("drills"); });
-  themeBodyActivators.set(`v72-${part.toLowerCase()}-expressions`, () => openSection(expressionId));
 }
 
 export function renderThemeBodyOverlay({ overlay, part }) {
   themeBodyActivators.clear();
   document.querySelectorAll("[data-v72-injected]").forEach((node) => node.remove());
   if (!overlay) return;
-  const expressionId = part === "A" ? "a-expressions" : "b-expressions";
-  const topicCourse = renderTopicCourse(overlay, part, () => openSection(expressionId));
+  renderTopicCourse(overlay, part);
   renderExpressionCourse(overlay, part);
-  if (topicCourse) renderBridges(part, topicCourse);
 }
 
 export function activateThemeBodyLesson(id) {

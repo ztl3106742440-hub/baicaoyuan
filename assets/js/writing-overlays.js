@@ -1,3 +1,4 @@
+import { createExamDirections } from "./writing-exam-directions.js";
 import {
   THEME_BODY_FORMAT,
   activateThemeBodyLesson,
@@ -61,7 +62,7 @@ function isMarkdownBoundary(lines, index) {
   return line.trim().startsWith("|") && isTableSeparator(lines[index + 1] ?? "");
 }
 
-function renderMarkdown(markdown) {
+function renderMarkdown(markdown, examPart = null) {
   const root = element("div", "overlay-markdown");
   const lines = String(markdown ?? "").replace(/\r\n?/gu, "\n").split("\n");
   let index = 0;
@@ -78,6 +79,9 @@ function renderMarkdown(markdown) {
       const heading = element(`h${level}`);
       appendInline(heading, headingMatch[2]);
       root.append(heading);
+      const year = examPart && headingMatch[2].match(/^(\d{4})\s/u)?.[1];
+      const directions = year && createExamDirections(year, examPart);
+      if (directions) root.append(directions);
       index += 1;
       continue;
     }
@@ -191,7 +195,7 @@ function createTabDeck(items, { className, label, initialId = null, onChange = n
       button.tabIndex = active ? 0 : -1;
       panelNodes[index].hidden = !active;
     }
-    if (focus) buttons[selectedIndex]?.focus();
+    if (focus) buttons[selectedIndex]?.focus({ preventScroll: true });
     onChange?.(items[selectedIndex], panelNodes[selectedIndex]);
   }
 
@@ -266,7 +270,7 @@ function renderCoreModels(overlay, part, entryIndex, renderTemplateCard) {
   return createTabDeck(items, { className: `model-deck-${part.toLowerCase()}`, label: `${part} 部分核心母版` }).root;
 }
 
-function renderTransferCase(item, entryIndex, onOpenEntry) {
+function renderTransferCase(item) {
   const article = element("article", "transfer-case");
   const head = element("header", "transfer-head");
   const copy = element("div");
@@ -285,20 +289,9 @@ function renderTransferCase(item, entryIndex, onOpenEntry) {
   });
   head.append(copy, toggle);
   article.append(head);
-
-  const evidence = element("aside", "overlay-callout evidence-callout");
-  evidence.append(element("b", "", "材料边界"), element("span", "", item.evidence));
-  article.append(evidence);
-  const sourceLinks = element("div", "transfer-source-links");
-  for (const [label, id] of [["查看原母版", item.modelId], ["查看原题卡", item.sourcePromptId]]) {
-    if (!id) continue;
-    const button = element("button", "", entryIndex.get(id)?.title ? `${label}｜${entryIndex.get(id).title}` : label);
-    button.type = "button";
-    button.disabled = !entryIndex.has(id);
-    button.addEventListener("click", () => onOpenEntry(id));
-    sourceLinks.append(button);
-  }
-  article.append(sourceLinks);
+  const year = item.title.match(/^(\d{4})\s/u)?.[1];
+  const directions = year && createExamDirections(year, item.part);
+  if (directions) article.append(directions);
 
   const decisions = element("div", "transfer-decisions");
   for (const [paragraph, decision, note] of item.changes) {
@@ -338,9 +331,9 @@ function renderTransferCase(item, entryIndex, onOpenEntry) {
   return article;
 }
 
-function renderTransfers(overlay, part, entryIndex, onOpenEntry) {
+function renderTransfers(overlay, part) {
   const cases = overlay.transferCases.filter((item) => item.part === part);
-  const items = cases.map((item) => ({ id: item.id, label: item.title.split("｜")[0], content: renderTransferCase(item, entryIndex, onOpenEntry) }));
+  const items = cases.map((item) => ({ id: item.id, label: item.title.split("｜")[0], content: renderTransferCase(item) }));
   return createTabDeck(items, { className: `transfer-deck-${part.toLowerCase()}`, label: `${part} 部分跨题迁移案例` }).root;
 }
 
@@ -458,11 +451,11 @@ function renderDrills(overlay, part) {
   return createTabDeck(items, { className: `drill-deck-${part.toLowerCase()}`, label: `${part} 部分自测练习` }).root;
 }
 
-function renderCoreOverlay(overlay, part, entryIndex, host, renderTemplateCard, onOpenEntry) {
+function renderCoreOverlay(overlay, part, entryIndex, host, renderTemplateCard) {
   if (!host) return;
   const modes = [
     { id: "models", label: "核心母版", content: renderCoreModels(overlay, part, entryIndex, renderTemplateCard) },
-    { id: "transfer", label: "跨题迁移", content: renderTransfers(overlay, part, entryIndex, onOpenEntry) },
+    { id: "transfer", label: "跨题迁移", content: renderTransfers(overlay, part) },
     { id: "slots", label: "填槽训练", content: renderSlots(overlay, part) },
     { id: "expressions", label: "加分句", content: renderExpressions(overlay, part) },
     { id: "drills", label: "自测", content: renderDrills(overlay, part) },
@@ -476,28 +469,7 @@ function renderCoreOverlay(overlay, part, entryIndex, host, renderTemplateCard, 
   host.replaceChildren(intro, deck.root);
 }
 
-function sourceDetails(chapter, sourceIndex) {
-  const details = element("details", "lesson-sources");
-  details.append(element("summary", "", "来源与内容边界"));
-  const list = element("ul");
-  for (const id of chapter.sourceRefIds) {
-    const source = sourceIndex.get(id);
-    if (!source) continue;
-    const item = element("li");
-    const label = source.url ? element("a", "", source.label) : element("strong", "", source.label);
-    if (source.url) {
-      label.href = source.url;
-      label.target = "_blank";
-      label.rel = "noopener noreferrer";
-    }
-    item.append(label, document.createTextNode(`：${source.notes}`));
-    list.append(item);
-  }
-  details.append(list);
-  return details;
-}
-
-function renderLiteracyChapter(chapter, sourceIndex, entryIndex, onOpenEntry) {
+function renderLiteracyChapter(chapter) {
   const article = element("article", "literacy-lesson");
   article.dataset.overlayChapterId = chapter.id;
   const header = element("header", "literacy-lesson-head");
@@ -507,7 +479,13 @@ function renderLiteracyChapter(chapter, sourceIndex, entryIndex, onOpenEntry) {
   article.append(header);
 
   const split = splitAnswerSection(chapter.bodyMarkdown);
-  const lessonBody = renderMarkdown(split.lesson);
+  const isPastPaperLesson = ["v7r-a4", "v7r-b4"].includes(chapter.id);
+  const lessonText = isPastPaperLesson
+    ? split.lesson.split("\n").filter((line) =>
+      !/^\*\*(?:题面关键词（公开|题面短指令（公开|材料来自)/u.test(line))
+      .join("\n").replace("数字来自用户提供的2026解析册。", "")
+    : split.lesson;
+  const lessonBody = renderMarkdown(lessonText, isPastPaperLesson ? chapter.part : null);
   if (chapter.defaultExpanded) article.append(lessonBody);
   else {
     const details = element("details", "literacy-body-toggle study-details");
@@ -519,24 +497,10 @@ function renderLiteracyChapter(chapter, sourceIndex, entryIndex, onOpenEntry) {
     answer.append(element("summary", "", "完成后展开 · 参考答案与解析"), renderMarkdown(split.answer));
     article.append(answer);
   }
-  if (chapter.linksToModels.length > 0) {
-    const links = element("div", "lesson-model-links");
-    links.append(element("b", "", "回到对应母版"));
-    for (const id of chapter.linksToModels) {
-      const button = element("button", "", entryIndex.get(id)?.title ?? id);
-      button.type = "button";
-      button.disabled = !entryIndex.has(id);
-      button.addEventListener("click", () => onOpenEntry(id));
-      links.append(button);
-    }
-    article.append(links);
-  }
-  article.append(sourceDetails(chapter, sourceIndex));
   return article;
 }
 
-function renderLiteracyOverlay(overlay, part, entryIndex, onOpenEntry) {
-  const sourceIndex = new Map(overlay.sourceReferences.map((source) => [source.id, source]));
+function renderLiteracyOverlay(overlay, part) {
   const chapters = overlay.chapters.filter((chapter) => chapter.part === part);
   const grouped = new Map();
   for (const chapter of chapters) {
@@ -559,7 +523,7 @@ function renderLiteracyOverlay(overlay, part, entryIndex, onOpenEntry) {
     const items = group.map((chapter) => ({
       id: chapter.id,
       label: `${chapter.sectionCode} ${chapter.title}`,
-      content: renderLiteracyChapter(chapter, sourceIndex, entryIndex, onOpenEntry),
+      content: renderLiteracyChapter(chapter),
     }));
     const initial = group.find((chapter) => chapter.defaultExpanded)?.id ?? group[0].id;
     const deck = createTabDeck(items, {
@@ -610,15 +574,15 @@ export function writingOverlaySearchItems(overlays, part) {
   return result;
 }
 
-export function renderWritingOverlays({ overlays = [], part, entryIndex, renderTemplateCard, onOpenEntry }) {
+export function renderWritingOverlays({ overlays = [], part, entryIndex, renderTemplateCard }) {
   lessonActivators.clear();
   const core = overlays.find((overlay) => overlay.format === CORE_TRANSFER_FORMAT);
   const literacy = overlays.find((overlay) => overlay.format === PROMPT_LITERACY_FORMAT);
   const themeBody = overlays.find((overlay) => overlay.format === THEME_BODY_FORMAT);
   const host = document.querySelector('[data-writing-overlay="core-transfer"]');
-  if (core) renderCoreOverlay(core, part, entryIndex, host, renderTemplateCard, onOpenEntry);
+  if (core) renderCoreOverlay(core, part, entryIndex, host, renderTemplateCard);
   else if (host) host.replaceChildren(element("p", "overlay-empty", "核心背诵覆盖层尚未进入当前教材版本。"));
-  if (literacy) renderLiteracyOverlay(literacy, part, entryIndex, onOpenEntry);
+  if (literacy) renderLiteracyOverlay(literacy, part);
   renderThemeBodyOverlay({ overlay: themeBody, part });
   return writingOverlaySearchItems(overlays, part);
 }

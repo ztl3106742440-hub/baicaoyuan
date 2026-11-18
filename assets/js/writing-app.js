@@ -18,6 +18,7 @@ import {
   renderWritingOverlays,
   writingOverlaySearchItems,
 } from "./writing-overlays.js";
+import { createExamDirections } from "./writing-exam-directions.js";
 
 const part = document.body.dataset.part;
 const qaMode = new URLSearchParams(location.search).get("qa") === "1";
@@ -27,7 +28,7 @@ const sidebar = document.querySelector("#sidebar");
 const contentStatus = document.querySelector("#contentStatus");
 const actionStatus = document.querySelector("#writingActionStatus");
 const currentPartSections = [...document.querySelectorAll(".learning-section")];
-const positionKey = `kaoyan.writing.position.${part}`;
+const appBar = document.querySelector(".app-bar");
 const themeKey = "kaoyan.writing.theme";
 const fontKey = "kaoyan.writing.largeType";
 const partLabels = { A: "小作文", B: "大作文" };
@@ -140,24 +141,22 @@ function partsForEntry(entry) {
   return entry?.examPart === "both" ? ["A", "B"] : [entry?.examPart].filter(Boolean);
 }
 
-function createEntityFrame(entry, overline, { domIdPrefix = "" } = {}) {
+function createEntityFrame(entry, { domIdPrefix = "" } = {}) {
   const card = element("article", "entity-card");
   card.id = `${domIdPrefix}entry-${entry.id}`;
   card.dataset.entryId = entry.id;
   card.dataset.entryKind = entry.kind;
   const head = element("header", "entity-head");
   const copy = element("div");
-  appendParagraph(copy, "entity-overline", `${overline} · ${entry.id}`);
   copy.append(element("h3", "", entry.title));
   appendParagraph(copy, "entity-summary", entry.zhSummary);
   const badges = element("div", "entry-badges");
   badges.append(createBadge(priorityLabels[entry.learningPriority] ?? entry.learningPriority));
   badges.append(createBadge(`难度 ${entry.difficulty}`));
-  if (entry.editorial?.verificationStatus) badges.append(createBadge(entry.editorial.verificationStatus));
   if (entry.origin?.sourceType === "codex-demo") badges.append(createBadge("结构演示", "demo-badge"));
   head.append(copy, badges);
   card.append(head);
-  card.append(createReviewControl(entry));
+  if (entry.kind !== "prompt") card.append(createReviewControl(entry));
   return card;
 }
 
@@ -283,47 +282,6 @@ function createSlotSkeleton(sentence) {
   return wrapper;
 }
 
-function uniqueIds(values) {
-  return [...new Set(values.filter((value) => typeof value === "string" && value))];
-}
-
-function expressionIdsForTemplate(entry) {
-  return uniqueIds((entry.article?.paragraphs ?? []).flatMap((paragraph) =>
-    (paragraph.sentences ?? []).flatMap((sentence) => sentence.expressionIds ?? [])));
-}
-
-function relationGroupsFor(entry) {
-  if (entry.kind === "template") {
-    return [
-      ["配套功能句", expressionIdsForTemplate(entry)],
-      ["相关题卡", entry.relatedPromptIds ?? []],
-      ["关联单词", entry.wordIds ?? []],
-    ];
-  }
-  if (entry.kind === "expression") {
-    return [
-      ["可用母版", entry.relatedTemplateIds ?? []],
-      ["相关主题", entry.relatedTopicIds ?? []],
-      ["相关题卡", entry.relatedPromptIds ?? []],
-      ["关联单词", entry.wordIds ?? []],
-    ];
-  }
-  if (entry.kind === "topic") {
-    return [
-      ["可用母版", entry.relatedTemplateIds ?? []],
-      ["配套功能句", entry.expressionIds ?? []],
-      ["相关题卡", entry.relatedPromptIds ?? []],
-      ["关联单词", entry.wordIds ?? []],
-    ];
-  }
-  return [
-    ["关联母版", entry.relatedTemplateIds ?? []],
-    ["推荐功能句", entry.expressionIds ?? []],
-    ["主题思路", entry.topicIds ?? []],
-    ["关联单词", entry.wordIds ?? []],
-  ];
-}
-
 function preferredPartForEntry(entry) {
   return partsForEntry(entry).includes(part) ? part : partsForEntry(entry)[0] ?? part;
 }
@@ -333,50 +291,6 @@ function routeForEntry(entry) {
   const query = `?entry=${encodeURIComponent(entry.id)}#entry-${encodeURIComponent(entry.id)}`;
   if (targetPart === part) return query;
   return targetPart === "A" ? `../part-a/${query}` : `../part-b/${query}`;
-}
-
-function createRelationPanel(entry) {
-  const groups = relationGroupsFor(entry)
-    .map(([label, ids]) => [label, uniqueIds(ids)])
-    .filter(([, ids]) => ids.length > 0);
-  if (groups.length === 0) return null;
-
-  const panel = element("section", "relation-panel");
-  panel.append(element("h4", "", "关联学习"));
-  for (const [label, ids] of groups) {
-    const group = element("div", "relation-group");
-    group.append(element("span", "relation-label", label));
-    const links = element("div", "relation-links");
-    for (const id of ids) {
-      const target = entryIndex.get(id);
-      if (target) {
-        const link = element("a", "relation-link", target.title);
-        link.href = routeForEntry(target);
-        link.dataset.relatedEntryId = target.id;
-        if (preferredPartForEntry(target) === part) {
-          link.addEventListener("click", (event) => {
-            event.preventDefault();
-            goToEntry(target.id, { focus: true, historyMode: "push" });
-          });
-        }
-        links.append(link);
-      } else if (id.startsWith("w-")) {
-        const link = element("a", "relation-link relation-word", id.replace(/^w-/u, ""));
-        link.href = `../../vocabulary/?q=${encodeURIComponent(id.replace(/^w-/u, ""))}`;
-        links.append(link);
-      }
-    }
-    if (links.childElementCount > 0) {
-      group.append(links);
-      panel.append(group);
-    }
-  }
-  return panel.childElementCount > 1 ? panel : null;
-}
-
-function appendRelationPanel(card, entry) {
-  const panel = createRelationPanel(entry);
-  if (panel) card.append(panel);
 }
 
 function appendTemplateGuide(parent, entry) {
@@ -450,7 +364,6 @@ function appendBilingualExamples(parent, examples, heading = "完整例句") {
     const item = element("article");
     appendParagraph(item, "example-en", example.en);
     appendParagraph(item, "example-zh", example.zh);
-    if (example.sourceType) appendParagraph(item, "example-source", `来源类型：${example.sourceType}`);
     list.append(item);
   }
   parent.append(list);
@@ -458,11 +371,9 @@ function appendBilingualExamples(parent, examples, heading = "完整例句") {
 
 function appendPromptStudyInfo(card, entry) {
   const hasInformation = (entry.commonMistakes ?? []).length > 0
-    || (entry.practiceSettings?.formatChecklist ?? []).length > 0
-    || (entry.verifiedFacts ?? []).length > 0
-    || entry.source;
+    || (entry.practiceSettings?.formatChecklist ?? []).length > 0;
   if (!hasInformation) return;
-  const details = createTeachingDetails("点击展开 · 审题陷阱、考场检查与来源");
+  const details = createTeachingDetails("点击展开 · 审题陷阱与考场检查");
   const body = element("div", "teaching-detail-body");
   if ((entry.commonMistakes ?? []).length > 0) {
     body.append(element("h4", "", "常见失误"));
@@ -472,57 +383,12 @@ function appendPromptStudyInfo(card, entry) {
     body.append(element("h4", "", "交卷前检查"));
     appendTextList(body, entry.practiceSettings.formatChecklist, "check-list");
   }
-  if ((entry.verifiedFacts ?? []).length > 0) {
-    body.append(element("h4", "", "已记录的核查事实"));
-    appendTextList(body, entry.verifiedFacts.map((fact) => fact.statementZh));
-  }
-  if (entry.source) {
-    body.append(element("h4", "", "材料来源"));
-    const source = element("div", "source-note");
-    appendParagraph(source, "", entry.source.title);
-    const locationText = [entry.source.fileName, entry.source.page].filter(Boolean).join(" · ");
-    appendParagraph(source, "", locationText);
-    if (entry.source.checkedAt) appendParagraph(source, "", `最近核查：${entry.source.checkedAt}`);
-    if (entry.source.url) {
-      const link = element("a", "source-link", "打开来源页面");
-      link.href = entry.source.url;
-      link.target = "_blank";
-      link.rel = "noopener noreferrer";
-      source.append(link);
-    }
-    body.append(source);
-  }
   details.append(body);
   card.append(details);
 }
 
-function appendLinkedTemplateCallout(card, entry) {
-  if (entry.modelResponse || !(entry.relatedTemplateIds ?? []).length) return;
-  const available = entry.relatedTemplateIds.map((id) => entryIndex.get(id)).filter(Boolean);
-  if (available.length === 0) return;
-  const callout = element("section", "linked-template-callout");
-  callout.append(
-    element("b", "", "本题使用关联母版，不重复存放第二份范文"),
-    element("p", "", "先完成审题和提纲，再打开对应母版查看完整正文、槽位替换与逐句批注。"),
-  );
-  const links = element("div", "relation-links");
-  for (const target of available) {
-    const link = element("a", "relation-link primary-relation", `打开母版 · ${target.title}`);
-    link.href = routeForEntry(target);
-    if (preferredPartForEntry(target) === part) {
-      link.addEventListener("click", (event) => {
-        event.preventDefault();
-        goToEntry(target.id, { focus: true, historyMode: "push" });
-      });
-    }
-    links.append(link);
-  }
-  callout.append(links);
-  card.append(callout);
-}
-
 function createTemplateCard(entry, options = {}) {
-  const card = createEntityFrame(entry, "TEMPLATE", options);
+  const card = createEntityFrame(entry, options);
   const content = createTeachingDetails("点击展开 · 完整母版、槽位替换与逐句批注", "template-content");
   const article = element("div", "template-article");
   const toolbar = element("div", "template-toolbar");
@@ -553,12 +419,11 @@ function createTemplateCard(entry, options = {}) {
   appendTemplateGuide(article, entry);
   content.append(article);
   card.append(content);
-  appendRelationPanel(card, entry);
   return card;
 }
 
 function createExpressionCard(entry) {
-  const card = createEntityFrame(entry, "EXPRESSION");
+  const card = createEntityFrame(entry);
   card.classList.add("expression-card");
   appendParagraph(card, "expression-pattern", entry.patternEn);
   appendParagraph(card, "expression-zh", entry.meaningZh);
@@ -590,12 +455,11 @@ function createExpressionCard(entry) {
   }
   details.append(body);
   card.append(details);
-  appendRelationPanel(card, entry);
   return card;
 }
 
 function createTopicCard(entry) {
-  const card = createEntityFrame(entry, "TOPIC");
+  const card = createEntityFrame(entry);
   appendParagraph(card, "expression-pattern", entry.thesisEn);
   appendParagraph(card, "expression-zh", entry.thesisZh);
   const chain = element("div", "topic-chain");
@@ -622,18 +486,19 @@ function createTopicCard(entry) {
     guide.append(guideBody);
     card.append(guide);
   }
-  appendRelationPanel(card, entry);
   return card;
 }
 
 function createPromptCard(entry) {
-  const card = createEntityFrame(entry, "PROMPT");
+  const card = createEntityFrame(entry);
+  const directions = createExamDirections(entry.year, entry.examPart);
+  if (directions) card.append(directions);
   const brief = element("div", "prompt-brief");
   const material = element("section", "prompt-material");
-  material.append(element("h4", "", entry.year ? `${entry.year} 年材料摘要` : "原创练习材料摘要"));
+  material.append(element("h4", "", entry.year ? "审题提示" : "原创练习材料摘要"));
   appendParagraph(material, "", entry.materialSummaryZh);
   const tasks = element("section", "task-points");
-  tasks.append(element("h4", "", "必答任务"));
+  tasks.append(element("h4", "", entry.year ? "答题与展开建议" : "必答任务"));
   const taskList = element("ol");
   for (const point of entry.taskPoints ?? []) taskList.append(element("li", "", point.zh));
   tasks.append(taskList);
@@ -655,7 +520,6 @@ function createPromptCard(entry) {
   if (entry.modelResponse) {
     const response = element("details", "model-response");
     response.append(element("summary", "", "点击展开 · 第二步：显示原创示范与逐句批注"));
-    appendParagraph(response, "model-disclaimer", entry.modelResponse.disclaimerZh);
     const toolbar = element("div", "reading-toolbar");
     toolbar.append(element("span", "", `${entry.modelResponse.label} · ${entry.modelResponse.wordCount} 词`));
     const readingMode = element("button", "", "临时隐藏批注，整篇连读");
@@ -677,8 +541,7 @@ function createPromptCard(entry) {
     }
     card.append(response);
   }
-  appendLinkedTemplateCallout(card, entry);
-  appendRelationPanel(card, entry);
+  card.append(createReviewControl(entry));
   return card;
 }
 
@@ -706,9 +569,10 @@ function pageLabel(state, pageIndex) {
 function createEntityPager(state, locationLabel) {
   const pager = element("nav", "entity-pager");
   pager.setAttribute("aria-label", `${kindLabels[state.kind]}${locationLabel}分页`);
-  const previous = element("button", "entity-page-button", "上一组");
+  const unit = state.kind === "prompt" ? "题" : state.pageSize === 1 ? "套" : "组";
+  const previous = element("button", "entity-page-button", `上一${unit}`);
   previous.type = "button";
-  previous.addEventListener("click", () => renderHostPage(state, { page: state.page - 1, announce: true }));
+  previous.addEventListener("click", () => changePage(state.page - 1, "previous"));
   const select = element("select", "entity-page-select");
   select.setAttribute("aria-label", `选择${kindLabels[state.kind]}页`);
   for (let index = 0; index < state.pageCount; index += 1) {
@@ -716,57 +580,53 @@ function createEntityPager(state, locationLabel) {
     option.value = String(index);
     select.append(option);
   }
-  select.addEventListener("change", () => renderHostPage(state, { page: Number.parseInt(select.value, 10), announce: true }));
-  const next = element("button", "entity-page-button", "下一组");
+  select.addEventListener("change", () => changePage(Number(select.value), "select"));
+  const next = element("button", "entity-page-button", `下一${unit}`);
   next.type = "button";
-  next.addEventListener("click", () => renderHostPage(state, { page: state.page + 1, announce: true }));
+  next.addEventListener("click", () => changePage(state.page + 1, "next"));
   pager.append(previous, select, next);
   state.pagers.push({ pager, previous, select, next });
   return pager;
+
+  function changePage(page, control) {
+    renderHostPage(state, page);
+    const topControls = state.pagers[0];
+    const target = topControls[control].disabled ? topControls.select : topControls[control];
+    target.focus({ preventScroll: true });
+    scrollToReadingStart(state.host);
+  }
 }
 
-function renderHostPage(state, { page = state.page, targetId = null, announce = false, focus = false } = {}) {
+function renderHostPage(state, page = state.page) {
   state.page = Math.max(0, Math.min(page, state.pageCount - 1));
   const start = state.page * state.pageSize;
   const visible = state.entries.slice(start, start + state.pageSize);
   state.cards.replaceChildren(...visible.map((entry) => renderers[entry.kind](entry)));
   const end = Math.min(start + visible.length, state.entries.length);
-  state.meta.textContent = `${kindLabels[state.kind]}共 ${state.entries.length} 条 · 当前 ${start + 1}–${end}`;
-  if (announce) state.meta.setAttribute("data-announced", String(Date.now()));
+  const range = state.pageSize === 1 ? String(end) : `${start + 1}–${end}`;
+  state.meta.textContent = `${kindLabels[state.kind]}共 ${state.entries.length} 条 · 当前 ${range}`;
   for (const controls of state.pagers) {
     controls.pager.hidden = state.pageCount <= 1;
     controls.previous.disabled = state.page === 0;
     controls.next.disabled = state.page === state.pageCount - 1;
     controls.select.value = String(state.page);
   }
-  if (targetId) {
-    requestAnimationFrame(() => {
-      const target = document.querySelector(`#entry-${CSS.escape(targetId)}`);
-      target?.scrollIntoView({ behavior: "smooth", block: "start" });
-      if (focus) {
-        const heading = target?.querySelector("h3");
-        heading?.setAttribute("tabindex", "-1");
-        heading?.focus({ preventScroll: true });
-      }
-    });
-  }
 }
 
-function initializeEntityHost(host, entries, requestedEntryId = null) {
+function initializeEntityHost(host, entries) {
   const kind = host.dataset.entityKind;
   if (entries.length === 0) {
     host.replaceChildren(element("div", "empty-state", host.dataset.empty));
     return;
   }
   const pageSize = entityPageSizes[kind] ?? 4;
-  const requestedIndex = requestedEntryId ? entries.findIndex((entry) => entry.id === requestedEntryId) : -1;
   const state = {
     kind,
     host,
     entries,
     pageSize,
     pageCount: Math.max(1, Math.ceil(entries.length / pageSize)),
-    page: requestedIndex >= 0 ? Math.floor(requestedIndex / pageSize) : 0,
+    page: 0,
     pagers: [],
     meta: element("p", "entity-page-meta"),
     cards: element("div", "entity-page-cards"),
@@ -777,16 +637,16 @@ function initializeEntityHost(host, entries, requestedEntryId = null) {
   shellNode.append(state.meta, createEntityPager(state, "顶部"), state.cards, createEntityPager(state, "底部"));
   host.replaceChildren(shellNode);
   entityHostStates.set(kind, state);
-  renderHostPage(state, { targetId: requestedIndex >= 0 ? requestedEntryId : null });
+  renderHostPage(state);
 }
 
-function renderEntryHosts(entries, requestedEntryId = null) {
+function renderEntryHosts(entries) {
   entityHostStates.clear();
   const partEntries = entriesForPart(entries, part);
   for (const host of document.querySelectorAll("[data-entity-kind]")) {
     const kind = host.dataset.entityKind;
     const matching = partEntries.filter((entry) => entry.kind === kind);
-    initializeEntityHost(host, matching, requestedEntryId);
+    initializeEntityHost(host, matching);
   }
 }
 
@@ -898,9 +758,6 @@ function configureSidebar() {
   });
   document.querySelector("#openDrawer").addEventListener("click", () => setDrawer(true));
   shade.addEventListener("click", () => setDrawer(false));
-  document.querySelectorAll("#sectionNav a").forEach((link) => link.addEventListener("click", () => {
-    if (isNarrow()) setDrawer(false);
-  }));
   addEventListener("resize", () => {
     if (!isNarrow()) setDrawer(false, { restoreFocus: false });
     refreshLabel();
@@ -944,7 +801,7 @@ function configureLearningUtilities() {
       link.addEventListener("click", (event) => event.preventDefault());
       link.addEventListener("dblclick", (event) => {
         event.preventDefault();
-        scrollTo({ top: 0, behavior: "smooth" });
+        scrollTo({ top: 0, behavior: "instant" });
       });
     }
   }
@@ -956,12 +813,6 @@ function setActiveSection(id) {
     link.classList.toggle("active", active);
     if (active) link.setAttribute("aria-current", "location");
     else link.removeAttribute("aria-current");
-  }
-  for (const button of document.querySelectorAll("[data-chapter-id]")) {
-    const active = button.dataset.chapterId === id;
-    button.classList.toggle("active", active);
-    button.setAttribute("aria-pressed", String(active));
-    if (active) button.scrollIntoView({ block: "nearest", inline: "center" });
   }
 }
 
@@ -979,7 +830,18 @@ function updateChapterBrowser() {
   chapterBrowser.querySelector("[data-chapter-next]").disabled = index >= currentPartSections.length - 1;
 }
 
-function showChapter(id, { historyMode = "none", focus = false, scroll = false } = {}) {
+function scrollToReadingStart(target) {
+  const headerHeight = appBar.offsetHeight + chapterBrowser.offsetHeight;
+  const top = target.getBoundingClientRect().top + scrollY - headerHeight - 12;
+  scrollTo({ top: Math.max(0, top), behavior: "instant" });
+}
+
+function focusHeading(heading) {
+  heading?.setAttribute("tabindex", "-1");
+  heading?.focus({ preventScroll: true });
+}
+
+function showChapter(id, { updateHistory = false, focus = false, scroll = true, lessonId = null } = {}) {
   const target = currentPartSections.find((section) => section.id === id) ?? currentPartSections[0];
   if (!target) return;
   activeChapterId = target.id;
@@ -990,18 +852,17 @@ function showChapter(id, { historyMode = "none", focus = false, scroll = false }
   }
   setActiveSection(activeChapterId);
   updateChapterBrowser();
-  if (historyMode !== "none") {
+  if (lessonId) activateWritingOverlayLesson(lessonId);
+  if (updateHistory) {
     const url = new URL(location.href);
     url.searchParams.delete("entry");
+    if (lessonId) url.searchParams.set("lesson", lessonId);
+    else url.searchParams.delete("lesson");
     url.hash = activeChapterId;
-    history[historyMode === "replace" ? "replaceState" : "pushState"]({}, "", url);
+    if (url.href !== location.href) history.pushState({}, "", url);
   }
-  if (scroll) target.scrollIntoView({ behavior: "smooth", block: "start" });
-  if (focus) {
-    const heading = target.querySelector("h2");
-    heading?.setAttribute("tabindex", "-1");
-    requestAnimationFrame(() => heading?.focus({ preventScroll: true }));
-  }
+  if (focus) focusHeading(target.querySelector("h2"));
+  if (scroll) scrollToReadingStart(target);
 }
 
 function sectionForEntry(entry) {
@@ -1009,7 +870,7 @@ function sectionForEntry(entry) {
   return currentPartSections.some((section) => section.id === id) ? id : currentPartSections[0]?.id;
 }
 
-function goToEntry(entryId, { focus = true, historyMode = "push" } = {}) {
+function goToEntry(entryId, { focus = true, updateHistory = true } = {}) {
   const entry = entryIndex.get(entryId);
   if (!entry) return false;
   if (!partsForEntry(entry).includes(part)) {
@@ -1020,55 +881,46 @@ function goToEntry(entryId, { focus = true, historyMode = "push" } = {}) {
   const entryPosition = state?.entries.findIndex((candidate) => candidate.id === entryId) ?? -1;
   if (!state || entryPosition < 0) return false;
   const chapterId = sectionForEntry(entry);
-  showChapter(chapterId, { historyMode: "none" });
-  if (historyMode !== "none") {
+  showChapter(chapterId, { scroll: false });
+  if (updateHistory) {
     const url = new URL(location.href);
     url.searchParams.set("entry", entryId);
+    url.searchParams.delete("lesson");
     url.hash = `entry-${entryId}`;
-    history[historyMode === "replace" ? "replaceState" : "pushState"]({}, "", url);
+    if (url.href !== location.href) history.pushState({}, "", url);
   }
-  renderHostPage(state, {
-    page: Math.floor(entryPosition / state.pageSize),
-    targetId: entryId,
-    announce: true,
-    focus,
-  });
+  renderHostPage(state, Math.floor(entryPosition / state.pageSize));
+  const card = document.getElementById(`entry-${entryId}`);
+  if (focus) focusHeading(card.querySelector("h3"));
+  scrollToReadingStart(card);
   return true;
 }
 
 function requestedEntryIdFromLocation() {
   const requested = new URLSearchParams(location.search).get("entry");
   if (requested) return requested;
-  return location.hash.startsWith("#entry-") ? decodeURIComponent(location.hash.slice(7)) : null;
+  return location.hash.startsWith("#entry-") ? location.hash.slice(7) : null;
 }
 
-function chapterFromLocation(requestedEntryId = null) {
-  if (requestedEntryId && entryIndex.has(requestedEntryId)) return sectionForEntry(entryIndex.get(requestedEntryId));
-  const hashId = decodeURIComponent(location.hash.replace(/^#/u, ""));
+function chapterFromLocation() {
+  const hashId = location.hash.slice(1);
   const normalizedHashId = chapterAliases.get(hashId) ?? hashId;
-  if (currentPartSections.some((section) => section.id === normalizedHashId)) return normalizedHashId;
-  const saved = readPosition();
-  const savedAnchor = chapterAliases.get(saved?.anchor) ?? saved?.anchor;
-  if (savedAnchor && currentPartSections.some((section) => section.id === savedAnchor)) return savedAnchor;
-  return currentPartSections[0]?.id;
+  return normalizedHashId || currentPartSections[0]?.id;
 }
 
-function configureChapterNavigation(requestedEntryId = null) {
+function showLocation({ initial = false } = {}) {
+  const entryId = requestedEntryIdFromLocation();
+  if (entryId && goToEntry(entryId, { focus: false, updateHistory: false })) return;
+  const lessonId = new URLSearchParams(location.search).get("lesson");
+  showChapter(chapterFromLocation(), { lessonId, scroll: !initial || Boolean(location.hash || lessonId) });
+}
+
+function configureChapterNavigation() {
   chapterBrowser = element("nav", "chapter-browser");
   chapterBrowser.setAttribute("aria-label", `${partLabels[part]}章节浏览`);
   const previous = element("button", "chapter-arrow", "上一章");
   previous.type = "button";
   previous.dataset.chapterPrevious = "";
-  const track = element("div", "chapter-track");
-  for (const [index, section] of currentPartSections.entries()) {
-    const button = element("button", "chapter-tab");
-    button.type = "button";
-    button.dataset.chapterId = section.id;
-    button.setAttribute("aria-pressed", "false");
-    button.append(element("span", "", String(index + 1).padStart(2, "0")), element("b", "", chapterTitle(section.id)));
-    button.addEventListener("click", () => showChapter(section.id, { historyMode: "push", focus: true, scroll: true }));
-    track.append(button);
-  }
   const next = element("button", "chapter-arrow", "下一章");
   next.type = "button";
   next.dataset.chapterNext = "";
@@ -1077,97 +929,23 @@ function configureChapterNavigation(requestedEntryId = null) {
   status.setAttribute("aria-live", "polite");
   previous.addEventListener("click", () => {
     const index = currentPartSections.findIndex((section) => section.id === activeChapterId);
-    if (index > 0) showChapter(currentPartSections[index - 1].id, { historyMode: "push", focus: true, scroll: true });
+    if (index > 0) showChapter(currentPartSections[index - 1].id, { updateHistory: true, focus: true });
   });
   next.addEventListener("click", () => {
     const index = currentPartSections.findIndex((section) => section.id === activeChapterId);
-    if (index < currentPartSections.length - 1) showChapter(currentPartSections[index + 1].id, { historyMode: "push", focus: true, scroll: true });
+    if (index < currentPartSections.length - 1) showChapter(currentPartSections[index + 1].id, { updateHistory: true, focus: true });
   });
-  chapterBrowser.append(previous, track, next, status);
+  chapterBrowser.append(previous, status, next);
   contentStatus.insertAdjacentElement("afterend", chapterBrowser);
 
   for (const link of document.querySelectorAll("#sectionNav a")) {
     link.addEventListener("click", (event) => {
       event.preventDefault();
       setDrawer(false, { restoreFocus: false });
-      showChapter(link.hash.slice(1), { historyMode: "push", focus: true, scroll: true });
+      showChapter(link.hash.slice(1), { updateHistory: true, focus: true });
     });
   }
-  const initialChapter = chapterFromLocation(requestedEntryId);
-  showChapter(initialChapter, { historyMode: "none" });
-  addEventListener("popstate", () => {
-    const entryId = requestedEntryIdFromLocation();
-    if (entryId && goToEntry(entryId, { focus: false, historyMode: "none" })) return;
-    showChapter(chapterFromLocation(), { historyMode: "none", scroll: true });
-  });
-}
-
-function readPosition(targetPart = part) {
-  try { return JSON.parse(localStorage.getItem(`kaoyan.writing.position.${targetPart}`) ?? "null"); } catch { return null; }
-}
-
-function activeSectionId() {
-  return document.querySelector("#sectionNav a.active")?.hash.slice(1) ?? currentPartSections[0]?.id ?? null;
-}
-
-function savePositionNow() {
-  try {
-    const section = currentPartSections.find((candidate) => candidate.id === activeChapterId);
-    localStorage.setItem(positionKey, JSON.stringify({
-      y: Math.max(0, Math.round(scrollY)),
-      anchor: activeSectionId(),
-      offset: section ? Math.max(0, Math.round(scrollY - section.offsetTop)) : 0,
-      updatedAt: new Date().toISOString(),
-    }));
-  } catch {}
-}
-
-function configurePositionMemory() {
-  let timer = null;
-  addEventListener("scroll", () => {
-    clearTimeout(timer);
-    timer = setTimeout(savePositionNow, 180);
-  }, { passive: true });
-  addEventListener("pagehide", savePositionNow);
-  for (const link of document.querySelectorAll("[data-part-link]")) link.addEventListener("click", savePositionNow);
-  document.querySelector("#resumePosition").addEventListener("click", () => {
-    const saved = readPosition();
-    if (!saved) return;
-    if (saved.anchor) showChapter(saved.anchor, { historyMode: "none" });
-    const section = currentPartSections.find((candidate) => candidate.id === activeChapterId);
-    const top = Number.isFinite(saved.offset) && section ? section.offsetTop + saved.offset : saved.y;
-    if (top >= 0) scrollTo({ top, behavior: "smooth" });
-  });
-}
-
-function restorePositionAfterRender(requestedEntryId = null) {
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    if (qaMode) {
-      document.documentElement.dataset.qaClientWidth = String(document.documentElement.clientWidth);
-      document.documentElement.dataset.qaScrollWidth = String(document.documentElement.scrollWidth);
-      const widest = [...document.querySelectorAll("body *")]
-        .map((node) => ({ node, rect: node.getBoundingClientRect() }))
-        .filter(({ rect }) => rect.right > document.documentElement.clientWidth + 1)
-        .sort((a, b) => b.rect.right - a.rect.right)[0];
-      if (widest) {
-        document.documentElement.dataset.qaOverflowTag = widest.node.tagName.toLowerCase();
-        document.documentElement.dataset.qaOverflowClass = widest.node.className || "";
-        document.documentElement.dataset.qaOverflowRight = widest.rect.right.toFixed(1);
-      }
-    }
-    if (requestedEntryId && goToEntry(requestedEntryId, { focus: false, historyMode: "none" })) {
-      return;
-    }
-    const hashId = decodeURIComponent(location.hash.replace(/^#/u, ""));
-    if (currentPartSections.some((section) => section.id === hashId)) {
-      document.querySelector(`#${CSS.escape(hashId)}`)?.scrollIntoView({ block: "start" });
-      return;
-    }
-    const saved = readPosition();
-    const section = currentPartSections.find((candidate) => candidate.id === activeChapterId);
-    const top = Number.isFinite(saved?.offset) && section ? section.offsetTop + saved.offset : saved?.y;
-    if (top > 0) scrollTo({ top, behavior: "auto" });
-  }));
+  addEventListener("popstate", () => showLocation());
 }
 
 function configureFontSize() {
@@ -1238,11 +1016,9 @@ function configureSearch(entries, overlayItems = []) {
         dialog.close();
         if (item.part !== part) return;
         event.preventDefault();
-        if (item.entryId) goToEntry(item.entryId, { focus: true, historyMode: "push" });
-        else {
-          showChapter(item.anchor, { historyMode: "push", focus: true, scroll: true });
-          if (item.overlayChapterId) activateWritingOverlayLesson(item.overlayChapterId);
-        }
+        setDrawer(false, { restoreFocus: false });
+        if (item.entryId) goToEntry(item.entryId);
+        else showChapter(item.anchor, { updateHistory: true, focus: true, lessonId: item.overlayChapterId });
       });
       return link;
     }));
@@ -1342,12 +1118,16 @@ async function configureServiceWorker() {
         if (worker.state === "installed" && navigator.serviceWorker.controller) showUpdate();
       });
     });
-    document.querySelector("#applyUpdate").addEventListener("click", () => registration.waiting?.postMessage({ type: "SKIP_WAITING" }));
-    let reloading = false;
+    let applyRequested = false;
+    document.querySelector("#applyUpdate").addEventListener("click", () => {
+      const waiting = registration.waiting;
+      if (!waiting) return;
+      applyRequested = true;
+      waiting.postMessage({ type: "SKIP_WAITING" });
+    });
     navigator.serviceWorker.addEventListener("controllerchange", () => {
-      if (reloading) return;
-      reloading = true;
-      location.reload();
+      banner.hidden = true;
+      if (applyRequested) location.reload();
     });
   } catch {
     // Local development and unsupported hosting should not block reading.
@@ -1361,29 +1141,24 @@ async function initialize() {
   configureSidebar();
   configureLearningUtilities();
   configureFontSize();
-  configurePositionMemory();
   const result = await loadWritingData();
   activeBundle = result.bundle;
   allEntries = result.bundle.entries;
   entryIndex = new Map(allEntries.map((entry) => [entry.id, entry]));
   const overlays = Array.isArray(result.bundle.overlays) ? result.bundle.overlays : [];
-  const requestedEntryId = requestedEntryIdFromLocation();
-  renderEntryHosts(allEntries, requestedEntryId);
+  renderEntryHosts(allEntries);
   renderWritingOverlays({
     overlays,
     part,
     entryIndex,
     renderTemplateCard: createTemplateCard,
-    onOpenEntry: (entryId) => goToEntry(entryId, { focus: true, historyMode: "push" }),
   });
   updateContentStatus(result.mode, result.bundle, result.failures);
-  configureChapterNavigation(requestedEntryId);
-  const requestedLessonId = new URLSearchParams(location.search).get("lesson");
-  if (requestedLessonId) activateWritingOverlayLesson(requestedLessonId);
+  configureChapterNavigation();
   const overlaySearchItems = ["A", "B"].flatMap((targetPart) => writingOverlaySearchItems(overlays, targetPart));
   configureSearch(allEntries, overlaySearchItems);
   configureDataCenter();
-  restorePositionAfterRender(requestedEntryId);
+  showLocation({ initial: true });
   if (!qaMode) configureServiceWorker();
 }
 
