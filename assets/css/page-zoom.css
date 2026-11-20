@@ -1,0 +1,62 @@
+:root {
+  container: page-layout / inline-size;
+  --page-zoom: 1;
+  --page-height: calc(100dvh / var(--page-zoom));
+  --page-tap-size: calc(44px / var(--page-zoom));
+  --collapsed-sidebar-width: max(82px, calc(var(--page-tap-size) + 30px));
+  zoom: var(--page-zoom);
+}
+
+.page-zoom-setting {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 9px;
+  max-width: 100%;
+  margin-top: 8px;
+  padding-block: 6px 0;
+  background: var(--sidebar);
+  color: var(--accent-strong);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.page-zoom {
+  width: 76px;
+  min-height: max(44px, var(--page-tap-size));
+  padding: 5px 18px 5px 8px;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  appearance: none;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='m1 1 4 4 4-4' fill='none' stroke='%23556156'/%3E%3C/svg%3E") right 8px center / 9px 6px no-repeat,
+    var(--surface);
+  color: var(--accent-strong);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.sidebar-collapsed:not(.drawer-open) .page-zoom-setting label { display: none; }
+.sidebar-collapsed:not(.drawer-open) .page-zoom {
+  width: 100%;
+  min-width: var(--page-tap-size);
+  padding-inline: 4px 13px;
+  background-position: right 4px center;
+  font-size: 12px;
+}
+
+html[data-zoom-out] :is(button, select, .brand, .vocab-brand, .app-bar a, .vocab-topbar a, .section-nav a, .side-nav a,
+  .part-switch a, .exam-paper-link, .overlay-pager-controls button, .related-network-links a,
+  a.term-form, .writing-reader details > summary, .word-details > summary) {
+  min-height: var(--page-tap-size);
+}
+
+html[data-zoom-out] :is(.icon-button, .top-icon, .primary-nav a, .theme-switcher button, .review-control button,
+  .chapter-arrow, .entity-page-button, .theme-item-arrow, .study-star) {
+  min-width: var(--page-tap-size);
+}

@@ -1,6 +1,7 @@
 import { listWordProgress, saveWordProgress } from "./storage.js";
 import { loadVocabularyData, searchTextForWord } from "./vocabulary-data.js";
 import { configureLearningServiceWorker } from "./learning-shell.js";
+import { configurePageZoom, isCompactPage, watchCompactPage } from "./page-zoom.js";
 import {
   reinforcementInsertionIndex,
   scheduleWordRating,
@@ -73,7 +74,6 @@ const state = {
   page: Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1,
   view: viewValues.has(requestedView) ? requestedView : "study",
   version: null,
-  mode: null,
   sessionSize: storedSessionSize(),
   sessionWords: [],
   sessionCursor: storedSessionCursor(),
@@ -727,7 +727,7 @@ function renderStudy({ focus = false } = {}) {
 }
 
 function isNarrowLayout() {
-  return matchMedia("(max-width: 900px)").matches;
+  return isCompactPage();
 }
 
 let drawerReturnFocus = null;
@@ -827,9 +827,7 @@ function configureControls() {
   elements.shell.classList.toggle("sidebar-collapsed", collapsed);
   document.querySelector("#vocabSidebarCollapse").setAttribute("aria-expanded", String(!collapsed));
   document.querySelector("#vocabSidebarCollapseLabel").textContent = collapsed ? "展开功能栏" : "收起功能栏";
-  addEventListener("resize", () => {
-    if (!isNarrowLayout()) setDrawer(false, { restoreFocus: false });
-  }, { passive: true });
+  watchCompactPage(() => setDrawer(false, { restoreFocus: false }));
   addEventListener("keydown", (event) => {
     if (event.key === "Escape") setDrawer(false);
     if (event.key === "Tab" && elements.shell.classList.contains("drawer-open")) {
@@ -854,6 +852,7 @@ function configureControls() {
 }
 
 async function start() {
+  configurePageZoom(() => setDrawer(false, { restoreFocus: false }));
   configureControls();
   setView(state.view);
   try {
@@ -866,7 +865,6 @@ async function start() {
     }
     state.words = words;
     state.version = version;
-    state.mode = mode;
     state.progress = new Map(records.map((record) => [record.wordId, record]));
     state.searchIndex = new Map(words.map((word) => [word.id, searchTextForWord(word)]));
     elements.status.textContent = `词库 · ${words.length} 词`;

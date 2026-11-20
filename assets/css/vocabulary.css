@@ -22,7 +22,6 @@
 html { scroll-behavior: smooth; scroll-padding-top: 78px; }
 body {
   margin: 0;
-  min-width: 320px;
   background: var(--page);
   color: var(--ink);
   font: 15px/1.65 var(--font-ui);
@@ -52,22 +51,23 @@ summary { cursor: pointer; }
 .vocab-shell {
   display: grid;
   grid-template-columns: 238px minmax(0, 1fr);
-  min-height: 100vh;
+  min-height: var(--page-height, 100dvh);
   transition: grid-template-columns .2s ease;
 }
-.vocab-shell.sidebar-collapsed { grid-template-columns: 76px minmax(0, 1fr); }
+.vocab-shell.sidebar-collapsed { grid-template-columns: var(--collapsed-sidebar-width) minmax(0, 1fr); }
 .vocab-sidebar {
   position: sticky;
   top: 0;
   z-index: 40;
   display: flex;
-  height: 100dvh;
+  height: var(--page-height, 100dvh);
   min-height: 0;
   flex-direction: column;
   padding: 18px 12px max(16px, env(safe-area-inset-bottom));
   border-right: 1px solid var(--rule);
   background: var(--sidebar);
   overflow-y: auto;
+  scrollbar-width: thin;
 }
 .drawer-close { display: none; }
 .vocab-brand {
@@ -365,13 +365,18 @@ summary { cursor: pointer; }
 .vocab-footer a { color: var(--accent-strong); font-weight: 800; }
 
 @media (max-width: 900px) {
+  :root { --prefer-page-drawer: 1; }
+}
+
+@container page-layout (max-width: 900px) or style(--prefer-page-drawer: 1) {
+  body { --compact-page: 1; }
   .vocab-shell, .vocab-shell.sidebar-collapsed { display: block; }
   .vocab-sidebar, .vocab-shell.sidebar-collapsed .vocab-sidebar {
     position: fixed;
     inset: 0 auto 0 0;
     z-index: 60;
-    width: min(300px, 86vw);
-    height: 100dvh;
+    width: min(300px, 86cqw);
+    height: var(--page-height, 100dvh);
     padding: 18px 12px max(18px, env(safe-area-inset-bottom));
     transform: translateX(-105%);
     transition: transform .2s ease;
@@ -403,8 +408,7 @@ summary { cursor: pointer; }
   .vocab-footer { width: calc(100% - 28px); }
 }
 
-@media (max-width: 600px) {
-  html { scroll-padding-top: 68px; }
+@container page-layout (max-width: 600px) {
   .vocab-topbar { min-height: 58px; }
   .top-page-button { min-width: 72px; min-height: 44px; padding-inline: 12px; font-size: 12px; }
   .top-status { font-size: 0; }
@@ -453,7 +457,7 @@ summary { cursor: pointer; }
   .vocab-footer { width: calc(100% - 20px); }
 }
 
-@media (max-width: 390px) {
+@container page-layout (max-width: 390px) {
   .view-tabs { gap: 3px; }
   .top-page-button { min-width: 66px; padding-inline: 9px; }
   .view-heading { gap: 10px; }

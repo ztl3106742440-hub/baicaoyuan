@@ -10,6 +10,7 @@
   <link rel="icon" href="../../assets/icons/app-icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../../assets/css/vocabulary.css">
   <link rel="stylesheet" href="../../assets/css/study-materials.css">
+  <link rel="stylesheet" href="../../assets/css/page-zoom.css">
 </head>
 <body data-module="networks">
   <a class="skip-link" href="#mainContent">跳到学习区</a>
@@ -32,6 +33,10 @@
       <div class="sidebar-footer">
         <button class="sidebar-tool" id="collapseAllStudy" type="button"><span aria-hidden="true">↟</span><span class="side-label">收起全部展开内容</span></button>
         <button class="sidebar-tool" id="vocabSidebarCollapse" type="button" aria-expanded="true"><span class="sidebar-collapse-icon" aria-hidden="true">‹</span><span class="side-label" id="vocabSidebarCollapseLabel">收起功能栏</span></button>
+      </div>
+      <div class="page-zoom-setting" hidden>
+        <label for="pageZoom">页面缩放</label>
+        <select id="pageZoom" class="page-zoom" data-page-zoom aria-label="整页缩放"><option>100%</option></select>
       </div>
     </aside>
     <main class="vocab-workspace" id="mainContent">

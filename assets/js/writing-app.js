@@ -20,6 +20,7 @@ import {
 } from "./writing-overlays.js";
 import { createExamDirections } from "./writing-exam-directions.js";
 import { REVIEW_FORMAT, createReviewedEssay, reviewLessonTarget } from "./writing-review.js";
+import { configurePageZoom, isCompactPage, watchCompactPage } from "./page-zoom.js";
 
 const part = document.body.dataset.part;
 const qaMode = new URLSearchParams(location.search).get("qa") === "1";
@@ -31,7 +32,6 @@ const actionStatus = document.querySelector("#writingActionStatus");
 const currentPartSections = [...document.querySelectorAll(".learning-section")];
 const appBar = document.querySelector(".app-bar");
 const themeKey = "kaoyan.writing.theme";
-const fontKey = "kaoyan.writing.largeType";
 const partLabels = { A: "小作文", B: "大作文" };
 const kindLabels = { template: "母版", expression: "功能句", topic: "主题卡", prompt: "题卡" };
 const kindSectionSuffix = { template: "templates", expression: "expressions", topic: "topics", prompt: "prompts" };
@@ -753,7 +753,7 @@ function configureTheme() {
 }
 
 function isNarrow() {
-  return matchMedia("(max-width: 800px)").matches;
+  return isCompactPage();
 }
 
 let drawerReturnFocus = null;
@@ -806,10 +806,10 @@ function configureSidebar() {
   });
   document.querySelector("#openDrawer").addEventListener("click", () => setDrawer(true));
   shade.addEventListener("click", () => setDrawer(false));
-  addEventListener("resize", () => {
-    if (!isNarrow()) setDrawer(false, { restoreFocus: false });
+  watchCompactPage(() => {
+    setDrawer(false, { restoreFocus: false });
     refreshLabel();
-  }, { passive: true });
+  });
   addEventListener("keydown", (event) => {
     if (event.key === "Escape" && shell.classList.contains("drawer-open")) {
       event.preventDefault();
@@ -879,7 +879,7 @@ function updateChapterBrowser() {
 }
 
 function scrollToReadingStart(target) {
-  const headerHeight = appBar.offsetHeight + chapterBrowser.offsetHeight;
+  const headerHeight = appBar.getBoundingClientRect().height + chapterBrowser.getBoundingClientRect().height;
   const top = target.getBoundingClientRect().top + scrollY - headerHeight - 12;
   scrollTo({ top: Math.max(0, top), behavior: "instant" });
 }
@@ -997,22 +997,12 @@ function configureChapterNavigation() {
   addEventListener("popstate", () => showLocation());
 }
 
-function configureFontSize() {
-  let large = false;
-  try { large = localStorage.getItem(fontKey) === "true"; } catch {}
-  document.documentElement.classList.toggle("large-type", large);
-  const button = document.querySelector("#fontToggle");
-  button.textContent = large ? "A−" : "A+";
-  button.setAttribute("aria-label", large ? "切换为标准字号" : "切换为大字号");
-  button.setAttribute("aria-pressed", String(large));
-  button.addEventListener("click", () => {
-    const next = !document.documentElement.classList.contains("large-type");
-    document.documentElement.classList.toggle("large-type", next);
-    button.textContent = next ? "A−" : "A+";
-    button.setAttribute("aria-label", next ? "切换为标准字号" : "切换为大字号");
-    button.setAttribute("aria-pressed", String(next));
-    try { localStorage.setItem(fontKey, String(next)); } catch {}
-  });
+function trackAppBarHeight() {
+  const column = appBar.closest(".main-column");
+  const update = () => column.style.setProperty("--app-bar-offset", `${appBar.offsetHeight}px`);
+  update();
+  new ResizeObserver(update).observe(appBar);
+  addEventListener("pagezoomchange", update);
 }
 
 function routeFor(itemPart, anchor, entryId = null, lessonId = null) {
@@ -1167,9 +1157,10 @@ async function initialize() {
   history.scrollRestoration = "manual";
   for (const [index, section] of currentPartSections.entries()) section.hidden = index !== 0;
   configureTheme();
+  configurePageZoom(() => setDrawer(false, { restoreFocus: false }));
+  trackAppBarHeight();
   configureSidebar();
   configureLearningUtilities();
-  configureFontSize();
   const result = await loadWritingData();
   activeBundle = result.bundle;
   allEntries = result.bundle.entries;

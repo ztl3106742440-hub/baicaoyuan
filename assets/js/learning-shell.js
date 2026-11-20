@@ -1,3 +1,5 @@
+import { configurePageZoom, isCompactPage, watchCompactPage } from "./page-zoom.js";
+
 export function configureLearningShell({ collapseSelector = "#mainContent details[open]" } = {}) {
   const shell = document.querySelector("#vocabShell");
   const shade = document.querySelector("#drawerShade");
@@ -9,7 +11,7 @@ export function configureLearningShell({ collapseSelector = "#mainContent detail
   const sidebarButton = document.querySelector("#vocabSidebarCollapse");
   const sidebarLabel = document.querySelector("#vocabSidebarCollapseLabel");
 
-  const isNarrow = () => matchMedia("(max-width: 900px)").matches;
+  const isNarrow = isCompactPage;
   let returnFocus = null;
   const focusable = () => [...(sidebar?.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])') ?? [])]
     .filter((element) => !element.hidden && element.getClientRects().length > 0);
@@ -29,6 +31,7 @@ export function configureLearningShell({ collapseSelector = "#mainContent detail
     if (shouldOpen) requestAnimationFrame(() => (closeButton ?? focusable()[0])?.focus());
     else if (restoreFocus && returnFocus instanceof HTMLElement && returnFocus.isConnected) requestAnimationFrame(() => returnFocus.focus());
   };
+  configurePageZoom(() => setDrawer(false, { restoreFocus: false }));
   setDrawer(false, { restoreFocus: false });
   openButton?.addEventListener("click", () => setDrawer(true));
   closeButton?.addEventListener("click", () => setDrawer(false));
@@ -55,9 +58,7 @@ export function configureLearningShell({ collapseSelector = "#mainContent detail
       scrollTo({ top: 0, behavior: "smooth" });
     });
   }
-  addEventListener("resize", () => {
-    if (!isNarrow()) setDrawer(false, { restoreFocus: false });
-  }, { passive: true });
+  watchCompactPage(() => setDrawer(false, { restoreFocus: false }));
   addEventListener("keydown", (event) => {
     if (event.key === "Escape") setDrawer(false);
     if (event.key !== "Tab" || !shell?.classList.contains("drawer-open")) return;

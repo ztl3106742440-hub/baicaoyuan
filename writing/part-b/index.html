@@ -12,6 +12,7 @@
   <link rel="manifest" href="../../manifest.webmanifest">
   <link rel="icon" href="../../assets/icons/app-icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../../assets/css/writing.css">
+  <link rel="stylesheet" href="../../assets/css/page-zoom.css">
 </head>
 <body data-module="writing" data-part="B">
   <a class="skip-link" href="#mainContent">跳到正文</a>
@@ -45,6 +46,10 @@
           <button type="button" data-theme-choice="collage" aria-label="文艺时尚拼贴主题">C</button>
         </div>
       </div>
+      <div class="page-zoom-setting" hidden>
+        <label for="pageZoom">页面缩放</label>
+        <select id="pageZoom" class="page-zoom" data-page-zoom aria-label="整页缩放"><option>100%</option></select>
+      </div>
     </aside>
 
     <main class="main-column" id="mainContent">
@@ -54,7 +59,6 @@
           <a class="active" href="./" aria-current="page">写作</a>
           <a href="../../vocabulary/">单词</a>
         </nav>
-        <div class="app-actions"><button class="icon-button" id="fontToggle" type="button" aria-label="切换大字号">A+</button></div>
       </header>
 
       <nav class="part-switch" aria-label="写作分区">

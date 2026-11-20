@@ -36,7 +36,6 @@
 html { scroll-padding-top: 86px; }
 body {
   margin: 0;
-  min-width: 320px;
   background: var(--page);
   color: var(--ink);
   font: 15px/1.75 var(--font-ui);
@@ -67,21 +66,22 @@ summary { cursor: pointer; }
   display: grid;
   grid-template-columns: 248px minmax(0, 1fr);
   max-width: 1700px;
-  min-height: 100vh;
+  min-height: var(--page-height, 100dvh);
   margin: 0 auto;
   transition: grid-template-columns .22s ease;
 }
-.app-shell.sidebar-collapsed { grid-template-columns: 72px minmax(0, 1fr); }
+.app-shell.sidebar-collapsed { grid-template-columns: var(--collapsed-sidebar-width) minmax(0, 1fr); }
 .sidebar {
   position: sticky;
   top: 0;
   z-index: 30;
   display: flex;
   align-self: start;
-  height: 100vh;
+  height: var(--page-height, 100dvh);
   min-height: 0;
   flex-direction: column;
   overflow-y: auto;
+  scrollbar-width: thin;
   overflow-x: hidden;
   padding: 24px 14px max(24px, env(safe-area-inset-bottom));
   border-right: 1px solid var(--rule);
@@ -231,7 +231,6 @@ summary { cursor: pointer; }
   font-weight: 700;
 }
 .primary-nav a.active { background: var(--ink); color: var(--surface); }
-.app-actions { display: flex; align-items: center; gap: 8px; }
 .text-button, .icon-button, .theme-switcher button, .reading-toolbar button {
   min-height: 44px;
   border: 1px solid var(--rule);
@@ -328,7 +327,7 @@ summary { cursor: pointer; }
 .action-status[data-tone="success"] { border-color: #b8d4c0; background: #eff8f1; color: #28573a; }
 .chapter-browser {
   position: sticky;
-  top: var(--app-bar-height);
+  top: var(--app-bar-offset, var(--app-bar-height));
   z-index: 18;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
@@ -356,7 +355,7 @@ summary { cursor: pointer; }
 }
 .chapter-arrow:disabled { cursor: default; opacity: .38; }
 .chapter-status { margin: 0; color: var(--ink); text-align: center; font-size: 13px; font-weight: 750; }
-.writing-reader { width: min(var(--reading-width), calc(100% - 48px)); min-height: calc(100dvh - var(--app-bar-height) - 62px); margin: 0 auto; padding: 18px 0 74px; }
+.writing-reader { width: min(var(--reading-width), calc(100% - 48px)); min-height: calc(var(--page-height, 100dvh) - var(--app-bar-height) - 62px); margin: 0 auto; padding: 18px 0 74px; }
 .learning-section {
   --section-tone: var(--surface);
   --section-accent: var(--accent);
@@ -734,11 +733,8 @@ summary { cursor: pointer; }
 .review-comparison dt { color: var(--accent-strong); font-size: 0.88rem; font-weight: 750; }
 .review-comparison dd { margin: 2px 0 0; font-size: 0.94rem; line-height: 1.55; }
 .review-comparison dd[lang="en"] { font-family: var(--font-en); }
-html.large-type .review-english { font-size: 1.32rem; }
-html.large-type .review-note,
-html.large-type .review-note-list { font-size: 1.07rem; }
 .data-status:empty { display: none; }
-@media (max-width: 540px) {
+@container page-layout (max-width: 540px) {
   .review-comparison dl { grid-template-columns: 1fr; gap: 9px; }
   .review-comparison dl > div + div { padding-top: 7px; border-top: 1px solid var(--rule); }
 }
@@ -1217,18 +1213,6 @@ html[data-theme="collage"] .core-mode-deck-b-panels > [role="tabpanel"],
 html[data-theme="collage"] .theme-body-course,
 html[data-theme="collage"] .theme-expression-course { box-shadow: var(--shadow); }
 
-html.large-type .overlay-markdown,
-html.large-type .transfer-zh,
-html.large-type .expression-zh,
-html.large-type .core-overlay-intro,
-html.large-type .theme-sentence-zh,
-html.large-type .theme-expression-zh { font-size: 15px; }
-html.large-type .transfer-en,
-html.large-type .expression-en,
-html.large-type .slot-guide-frame,
-html.large-type .theme-sentence-en,
-html.large-type .theme-expression-en,
-html.large-type .essay-continuous-text p { font-size: 19px; }
 
 /* Theme A: warm nature reading room */
 html[data-theme="nature"] body {
@@ -1367,30 +1351,8 @@ html[data-theme="collage"] .why-note { margin-left: 13px; border-radius: 0 8px 8
 html[data-theme="collage"] .route-stack article { border: 0; box-shadow: var(--shadow); }
 html[data-theme="collage"] .takeaway-grid article:nth-child(2) { transform: translateY(7px); background: #eaecdf; }
 
-html.large-type body { font-size: 17px; }
-html.large-type .sentence-en, html.large-type .slot-skeleton, html.large-type .expression-pattern { font-size: 20px; }
-html.large-type .sentence-zh,
-html.large-type .why-note,
-html.large-type .section-lead,
-html.large-type .entity-summary,
-html.large-type .expression-zh,
-html.large-type .topic-step p,
-html.large-type .prompt-material p,
-html.large-type .task-points ol,
-html.large-type .outline-panel ol,
-html.large-type .study-details,
-html.large-type .teaching-detail-body { font-size: 15px; }
-html.large-type .entry-badges span,
-html.large-type .review-control > span,
-html.large-type .chapter-status,
-html.large-type .entity-page-meta { font-size: 12px; }
-html.large-type .review-control button,
-html.large-type .chapter-arrow,
-html.large-type .entity-page-button,
-html.large-type .entity-page-select { font-size: 14px; }
-html.large-type .exam-directions-en { font-size: 1.22rem; }
 
-@media (max-width: 1180px) {
+@container page-layout (max-width: 1180px) {
   .app-shell { grid-template-columns: 220px minmax(0, 1fr); }
   .sidebar { padding-inline: 10px; }
   .writing-hero { margin-inline: 18px; padding-inline: 32px; }
@@ -1401,14 +1363,18 @@ html.large-type .exam-directions-en { font-size: 1.22rem; }
 }
 
 @media (max-width: 800px) {
-  html { scroll-padding-top: 72px; }
+  :root { --prefer-page-drawer: 1; }
+}
+
+@container page-layout (max-width: 800px) or style(--prefer-page-drawer: 1) {
+  body { --compact-page: 1; }
   .app-shell, .app-shell.sidebar-collapsed { display: block; }
   .sidebar, .app-shell.sidebar-collapsed .sidebar {
     position: fixed;
     inset: 0 auto 0 0;
     z-index: 60;
-    width: min(290px, 84vw);
-    height: 100dvh;
+    width: min(290px, 84cqw);
+    height: var(--page-height, 100dvh);
     padding: 20px 14px max(22px, env(safe-area-inset-bottom));
     transform: translateX(-106%);
     transition: transform .22s ease;
@@ -1439,7 +1405,6 @@ html.large-type .exam-directions-en { font-size: 1.22rem; }
   .text-button { min-width: 44px; padding: 6px 9px; font-size: 0; }
   .text-button span { font-size: 20px; }
   .theme-switcher button { width: 44px; min-height: 44px; }
-  .app-actions { gap: 5px; }
   .sidebar-footer { margin-top: auto; }
   .part-switch { grid-template-columns: repeat(2, 1fr); padding: 12px 12px 0; gap: 7px; }
   .part-switch a { min-height: 64px; padding: 8px 10px; gap: 0 7px; }
@@ -1512,10 +1477,9 @@ html.large-type .exam-directions-en { font-size: 1.22rem; }
   .theme-item-controls { grid-template-columns: 82px minmax(160px, 1fr) 82px 52px; }
 }
 
-@media (max-width: 480px) {
+@container page-layout (max-width: 480px) {
   .theme-switcher { padding: 2px; }
   .theme-switcher button { width: 44px; min-height: 44px; }
-  .app-actions > .icon-button:not(.mobile-only) { display: inline-grid; place-items: center; }
   .part-switch a { display: block; text-align: center; }
   .part-switch a > span, .part-switch strong, .part-switch small { display: block; }
   .writing-hero, html[data-theme="newspaper"] .writing-hero, html[data-theme="collage"] .writing-hero { grid-template-columns: 1fr; min-height: auto; }
