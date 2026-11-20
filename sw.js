@@ -1,6 +1,6 @@
 const CACHE_PREFIX = "kaoyan-english";
-const SHELL_CACHE = `${CACHE_PREFIX}-shell-page-zoom-1`;
-const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-page-zoom-1`;
+const SHELL_CACHE = `${CACHE_PREFIX}-shell-page-zoom-2`;
+const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-page-zoom-2`;
 const scopeUrl = new URL(self.registration.scope);
 const shellPaths = [
   "./",
