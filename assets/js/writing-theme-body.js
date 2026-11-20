@@ -291,28 +291,10 @@ function essayCard(essay, part) {
   return article;
 }
 
-function drillCard(drill) {
-  const article = element("article", "theme-drill-card");
-  article.dataset.themeBodyId = drill.id;
-  article.append(element("p", "overlay-kicker", `PART ${drill.part} · ORIGINAL PRACTICE`), element("h3", "", drill.prompt));
-  const checklist = element("ul", "theme-drill-checklist");
-  for (const point of drill.must) checklist.append(element("li", "", point));
-  article.append(element("h4", "", "作答必须包含"), checklist);
-  const answer = element("details", "study-details theme-drill-answer");
-  answer.append(element("summary", "", "完成后展开 · 参考主体与错误边界"));
-  const body = element("div", "theme-drill-sample");
-  for (const sentence of drill.sample) body.append(sentenceBlock(sentence));
-  body.append(element("p", "theme-risk-note", `常见坑：${drill.trap}`));
-  answer.append(body);
-  article.append(answer);
-  return article;
-}
-
 function expressionCard(item) {
   const article = element("article", "theme-expression-card");
   article.dataset.themeBodyId = item.id;
   article.append(
-    element("span", `expression-priority ${item.memorizationPriority}`, item.memorizationPriority === "must" ? "主背" : "备用"),
     element("p", "theme-expression-en", item.patternEn),
     element("p", "theme-expression-zh", item.meaningZh),
   );
@@ -352,16 +334,12 @@ function renderTopicCourse(overlay, part) {
   course.dataset.v72Injected = "true";
   const header = element("header", "theme-body-course-head");
   header.append(
-    element("span", "content-zone-badge primary", "主学习区"),
-    element("p", "overlay-kicker", "V7.2 · CONTENT BEFORE ORNAMENT"),
-    element("h3", "", part === "A" ? "主体内容工作台" : "论证链工作台"),
-    element("p", "", part === "A" ? "先选场景和交际任务，再取具体内容、收益与限制；一次只显示一张卡。" : "按观点—机制—例子—限定组织主体段；一次只处理一条论证链。"),
+    element("h3", "", part === "A" ? "场景素材与例文" : "论证链与例文"),
   );
 
   const essays = part === "A" ? overlay.applicationEssays : overlay.picturePracticeEssays;
   let topicBrowser;
   let essayBrowser;
-  let drillBrowser;
   let modeDeck;
   let selectedFunction = "all";
 
@@ -419,26 +397,13 @@ function renderTopicCourse(overlay, part) {
     themeBodyActivators.set(essay.id, () => { modeDeck.activate("essays"); essayBrowser.activate(essay.id); });
   }
 
-  const drills = overlay.drills.filter((drill) => drill.part === part);
-  const drillMode = element("div", "theme-drill-mode");
-  drillBrowser = createItemBrowser(drills, {
-    label: `${part} 部分主体内容训练`,
-    renderItem: drillCard,
-  });
-  drillMode.append(element("p", "theme-mode-note", "先只看任务点完成草稿，再展开参考主体；答案默认收起。"), drillBrowser.root);
-  for (const drill of drills) {
-    themeBodyActivators.set(drill.id, () => { modeDeck.activate("drills"); drillBrowser.activate(drill.id); });
-  }
-
   modeDeck = createModeDeck([
     { id: "materials", label: part === "A" ? "主题素材" : "论证链", content: materials },
-    { id: "essays", label: `完整范文 ${essays.length}`, content: essayMode },
-    { id: "drills", label: `反向训练 ${drills.length}`, content: drillMode },
+    { id: "essays", label: "原创练习范文", content: essayMode },
   ], { className: `theme-body-mode-${part.toLowerCase()}`, label: `${part} 部分主题主体学习方式` });
 
   themeBodyActivators.set(`v72-${part.toLowerCase()}-materials`, () => modeDeck.activate("materials"));
   themeBodyActivators.set(`v72-${part.toLowerCase()}-essays`, () => modeDeck.activate("essays"));
-  themeBodyActivators.set(`v72-${part.toLowerCase()}-drills`, () => modeDeck.activate("drills"));
   course.append(header, modeDeck.root);
   insertBeforeSupplement(target, course);
 }
@@ -463,10 +428,7 @@ function renderExpressionCourse(overlay, part) {
   course.dataset.v72Injected = "true";
   const header = element("header", "theme-expression-course-head");
   header.append(
-    element("span", "content-zone-badge primary", "主背区"),
-    element("p", "overlay-kicker", "V7.2 · FUNCTIONAL SENTENCES"),
-    element("h3", "", part === "A" ? "把主体内容写成句子" : "把论证链写成句子"),
-    element("p", "", "按段落功能分组；主背句直接显示，备用句和错误边界按需展开。"),
+    element("h3", "", "按段落功能查句"),
   );
   const browser = createItemBrowser(groups, {
     label: `${part} 部分 V7.2 句式分组`,
@@ -504,8 +466,8 @@ export function themeBodySearchItems(overlay, part) {
       part,
       anchor,
       title: part === "A" ? "主题主体内容工作台" : "论证链工作台",
-      summary: part === "A" ? "场景素材、具体收益、条件边界、完整范文与反向训练" : "观点、机制、例子、限定、完整范文与反向训练",
-      type: "V7.2 主体内容",
+      summary: part === "A" ? "场景、安排、收益和条件" : "观点、机制、例子与限定",
+      type: "主题素材",
       overlayChapterId: `v72-${part.toLowerCase()}-materials`,
       searchText: "主题 主体 内容 论证 范文 训练".toLocaleLowerCase("zh-CN"),
     },
@@ -529,7 +491,7 @@ export function themeBodySearchItems(overlay, part) {
       anchor,
       title: part === "A" ? essay.task : essay.title,
       summary: `${essay.wordCount} 词原创示范；连读速背与逐句讲评共用正文。`,
-      type: "V7.2 原创范文",
+      type: "原创练习范文",
       overlayChapterId: essay.id,
       searchText: JSON.stringify(essay).toLocaleLowerCase("zh-CN"),
     });

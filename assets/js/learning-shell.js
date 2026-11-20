@@ -78,18 +78,7 @@ export function configureLearningShell({ collapseSelector = "#mainContent detail
 export async function configureLearningServiceWorker() {
   if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
   try {
-    const registration = await navigator.serviceWorker.register(new URL("../../sw.js", import.meta.url), { scope: new URL("../../", import.meta.url).pathname });
-    const banner = document.querySelector("#updateBanner");
-    const showUpdate = () => { if (banner) banner.hidden = false; };
-    if (registration.waiting) showUpdate();
-    registration.addEventListener("updatefound", () => registration.installing?.addEventListener("statechange", () => {
-      if (registration.installing?.state === "installed" && navigator.serviceWorker.controller) showUpdate();
-    }));
-    document.querySelector("#applyUpdate")?.addEventListener("click", () => registration.waiting?.postMessage({ type: "SKIP_WAITING" }));
-    let reloading = false;
-    navigator.serviceWorker.addEventListener("controllerchange", () => {
-      if (!reloading) { reloading = true; location.reload(); }
-    });
+    await navigator.serviceWorker.register(new URL("../../sw.js", import.meta.url), { scope: new URL("../../", import.meta.url).pathname });
   } catch {
     // 本地预览或不支持 Service Worker 时不阻塞学习。
   }

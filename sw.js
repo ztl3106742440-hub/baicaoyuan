@@ -1,6 +1,6 @@
 const CACHE_PREFIX = "kaoyan-english";
-const SHELL_CACHE = `${CACHE_PREFIX}-shell-v7-2`;
-const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-v7-2`;
+const SHELL_CACHE = `${CACHE_PREFIX}-shell-writing-review-1`;
+const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-writing-review-1`;
 const scopeUrl = new URL(self.registration.scope);
 const shellPaths = [
   "./",
@@ -9,6 +9,7 @@ const shellPaths = [
   "./writing/part-a/index.html",
   "./writing/part-b/",
   "./writing/part-b/index.html",
+  "./writing/reference/essay-review.html",
   "./vocabulary/",
   "./vocabulary/index.html",
   "./vocabulary/networks/",
@@ -29,6 +30,7 @@ const shellPaths = [
   "./assets/js/reading-app.js",
   "./assets/js/writing-data.js",
   "./assets/js/writing-exam-directions.js",
+  "./assets/js/writing-review.js",
   "./assets/js/writing-overlays.js",
   "./assets/js/writing-theme-body.js",
   "./assets/js/writing-app.js",

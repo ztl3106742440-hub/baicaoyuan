@@ -1,4 +1,5 @@
 import { createExamDirections } from "./writing-exam-directions.js";
+import { REVIEW_FORMAT, renderReviewAppendix, renderReviewCore, reviewSearchItems } from "./writing-review.js";
 import {
   THEME_BODY_FORMAT,
   activateThemeBodyLesson,
@@ -515,11 +516,7 @@ function renderLiteracyOverlay(overlay, part) {
     const course = element("section", "literacy-course");
     course.dataset.targetSection = targetId;
     const header = element("header", "literacy-course-head");
-    header.append(
-      element("p", "overlay-kicker", "V7.1 · ENGLISH PROMPT READING"),
-      element("h3", "", "英文审题精讲"),
-      element("p", "", "先判断任务，再调用母版；一次只显示一个专题。"),
-    );
+    header.append(element("h3", "", "英文审题精讲"));
     const items = group.map((chapter) => ({
       id: chapter.id,
       label: `${chapter.sectionCode} ${chapter.title}`,
@@ -549,7 +546,8 @@ export function activateWritingOverlayLesson(chapterId) {
 export function writingOverlaySearchItems(overlays, part) {
   const literacy = overlays.find((overlay) => overlay.format === PROMPT_LITERACY_FORMAT);
   const themeBody = overlays.find((overlay) => overlay.format === THEME_BODY_FORMAT);
-  const result = [{
+  const review = overlays.find((overlay) => overlay.format === REVIEW_FORMAT);
+  const result = review ? reviewSearchItems(review, part) : [{
     part,
     anchor: `${part.toLowerCase()}-core`,
     title: "核心背诵与跨题迁移",
@@ -579,10 +577,13 @@ export function renderWritingOverlays({ overlays = [], part, entryIndex, renderT
   const core = overlays.find((overlay) => overlay.format === CORE_TRANSFER_FORMAT);
   const literacy = overlays.find((overlay) => overlay.format === PROMPT_LITERACY_FORMAT);
   const themeBody = overlays.find((overlay) => overlay.format === THEME_BODY_FORMAT);
+  const review = overlays.find((overlay) => overlay.format === REVIEW_FORMAT);
   const host = document.querySelector('[data-writing-overlay="core-transfer"]');
-  if (core) renderCoreOverlay(core, part, entryIndex, host, renderTemplateCard);
+  if (review && host) renderReviewCore(host, review, part, entryIndex);
+  else if (core) renderCoreOverlay(core, part, entryIndex, host, renderTemplateCard);
   else if (host) host.replaceChildren(element("p", "overlay-empty", "核心背诵覆盖层尚未进入当前教材版本。"));
   if (literacy) renderLiteracyOverlay(literacy, part);
   renderThemeBodyOverlay({ overlay: themeBody, part });
+  if (review) renderReviewAppendix(review, part);
   return writingOverlaySearchItems(overlays, part);
 }

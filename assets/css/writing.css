@@ -702,6 +702,46 @@ summary { cursor: pointer; }
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+.review-module + .review-module { margin-top: 28px; }
+.review-module > h3 { margin: 0 0 12px; color: var(--accent-strong); font-size: 1.28rem; }
+.review-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 12px; }
+.review-card {
+  min-width: 0;
+  padding: clamp(12px, 2vw, 20px);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  background: var(--surface);
+  overflow-wrap: anywhere;
+}
+.review-card h4 { margin: 0 0 8px; font-size: 1rem; line-height: 1.5; }
+.review-note { margin: 5px 0 10px; color: var(--muted); font-size: 0.94rem; line-height: 1.65; }
+.review-english { margin: 8px 0; font: 1.13rem/1.7 var(--font-en); white-space: pre-line; overflow-wrap: anywhere; }
+.review-english strong { color: var(--interactive-strong); }
+.review-frame { padding: 9px 12px; border-radius: 8px; background: var(--soft); }
+.review-details { margin: 8px 0 0; padding-inline: 10px; }
+.review-details > summary { font-size: 0.93rem; }
+.review-primary + .review-primary { margin-top: 16px; }
+.review-essay { margin: 12px 0; padding: 14px clamp(12px, 2vw, 22px); border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); }
+.review-essay-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin-bottom: 9px; }
+.review-essay-head h4 { margin: 0; font-size: 1rem; }
+.review-essay-head span { font-size: 0.86rem; color: var(--muted); }
+.review-essay .review-body { max-width: 75ch; margin: 0 0 12px; }
+.review-signoff { margin-bottom: 12px; }
+.review-note-list { margin: 0; padding: 4px 12px 9px 28px; font-size: 0.94rem; line-height: 1.65; }
+.review-note-list li + li { margin-top: 6px; }
+.review-comparison { display: grid; gap: 8px; margin: 10px 0; }
+.review-comparison dl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0; }
+.review-comparison dt { color: var(--accent-strong); font-size: 0.88rem; font-weight: 750; }
+.review-comparison dd { margin: 2px 0 0; font-size: 0.94rem; line-height: 1.55; }
+.review-comparison dd[lang="en"] { font-family: var(--font-en); }
+html.large-type .review-english { font-size: 1.32rem; }
+html.large-type .review-note,
+html.large-type .review-note-list { font-size: 1.07rem; }
+.data-status:empty { display: none; }
+@media (max-width: 540px) {
+  .review-comparison dl { grid-template-columns: 1fr; gap: 9px; }
+  .review-comparison dl > div + div { padding-top: 7px; border-top: 1px solid var(--rule); }
+}
 .primary-relation { border-color: #82ad90; background: #e2f1e6; color: #2e6040; }
 
 .practice-card { margin-top: 12px; padding: 17px; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--surface); }
@@ -742,8 +782,6 @@ summary { cursor: pointer; }
 .data-dialog-body small { color: var(--muted); font-size: 10px; }
 .data-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .data-status { padding: 10px 12px; border-left: 4px solid var(--accent); background: var(--soft); color: var(--ink) !important; }
-.update-banner { position: fixed; inset: auto 18px max(18px, env(safe-area-inset-bottom)) auto; z-index: 90; display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-radius: 12px; background: var(--ink); color: var(--surface); box-shadow: 0 16px 50px rgb(0 0 0 / 22%); font-size: 12px; }
-.update-banner button { min-height: 44px; border: 0; border-radius: 8px; background: var(--accent); color: var(--accent-ink); }
 .drawer-shade { display: none; }
 
 /* V7 core recall and V7.1 prompt-literacy overlays */

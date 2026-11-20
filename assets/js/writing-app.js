@@ -19,6 +19,7 @@ import {
   writingOverlaySearchItems,
 } from "./writing-overlays.js";
 import { createExamDirections } from "./writing-exam-directions.js";
+import { REVIEW_FORMAT, createReviewedEssay, reviewLessonTarget } from "./writing-review.js";
 
 const part = document.body.dataset.part;
 const qaMode = new URLSearchParams(location.search).get("qa") === "1";
@@ -79,18 +80,18 @@ const themeInformation = {
   },
 };
 const staticSearchItems = [
-  ["A", "a-core", "核心背诵与跨题迁移", "建议邮件、招募通知、填槽、迁移、自测"],
+  ["A", "a-core", "主背", "万能加分句、整篇主背、跨题对照和题型短块"],
   ["A", "a-overview", "审题与体裁", "收信人、目的、任务、语气、格式、邮件与通知"],
   ["A", "a-templates", "四组核心功能母版", "邀请安排、建议推荐、回复说明、通知招募"],
-  ["A", "a-prompts", "小作文代表题与逐句精讲", "任务点、原创范文、难词、短评"],
+  ["A", "a-prompts", "小作文真题范文", "题意、原创范文和段落讲解"],
   ["A", "a-expressions", "小作文功能句补充库", "称呼、目的、细节、礼貌结尾"],
   ["A", "a-topics", "小作文主题思路", "校园活动、沟通、建议与具体行动"],
-  ["B", "b-core", "核心背诵与跨题迁移", "图画母版、图表母版、填槽、迁移、自测"],
+  ["B", "b-core", "主背", "万能加分句、整篇主背、跨题对照和图表句架"],
   ["B", "b-overview", "大作文概览", "20分、图画、图表、图文混合"],
   ["B", "b-routes", "三类材料审题路线", "事实、单位、比较、寓意、论证"],
   ["B", "b-templates", "图画与图表核心母版", "三段骨架、槽位、迁移"],
   ["B", "b-expressions", "大作文功能句库", "数字、趋势、原因、意义、让步、措施"],
-  ["B", "b-prompts", "大作文题卡逐句精讲", "审题、提纲、范文、批注"],
+  ["B", "b-prompts", "大作文真题范文", "图画、图表、混合材料的题意与范文"],
   ["B", "b-topics", "主题补充素材", "科技、成长、教育、文化、公共环境"],
 ].map(([itemPart, anchor, title, summary]) => ({
   part: itemPart,
@@ -141,7 +142,7 @@ function partsForEntry(entry) {
   return entry?.examPart === "both" ? ["A", "B"] : [entry?.examPart].filter(Boolean);
 }
 
-function createEntityFrame(entry, { domIdPrefix = "" } = {}) {
+function createEntityFrame(entry, { domIdPrefix = "", compact = false } = {}) {
   const card = element("article", "entity-card");
   card.id = `${domIdPrefix}entry-${entry.id}`;
   card.dataset.entryId = entry.id;
@@ -149,12 +150,13 @@ function createEntityFrame(entry, { domIdPrefix = "" } = {}) {
   const head = element("header", "entity-head");
   const copy = element("div");
   copy.append(element("h3", "", entry.title));
-  appendParagraph(copy, "entity-summary", entry.zhSummary);
+  head.append(copy);
+  if (!compact) appendParagraph(copy, "entity-summary", entry.zhSummary);
   const badges = element("div", "entry-badges");
   badges.append(createBadge(priorityLabels[entry.learningPriority] ?? entry.learningPriority));
   badges.append(createBadge(`难度 ${entry.difficulty}`));
   if (entry.origin?.sourceType === "codex-demo") badges.append(createBadge("结构演示", "demo-badge"));
-  head.append(copy, badges);
+  if (!compact) head.append(badges);
   card.append(head);
   if (entry.kind !== "prompt") card.append(createReviewControl(entry));
   return card;
@@ -286,8 +288,7 @@ function preferredPartForEntry(entry) {
   return partsForEntry(entry).includes(part) ? part : partsForEntry(entry)[0] ?? part;
 }
 
-function routeForEntry(entry) {
-  const targetPart = preferredPartForEntry(entry);
+function routeForEntry(entry, targetPart = preferredPartForEntry(entry)) {
   const query = `?entry=${encodeURIComponent(entry.id)}#entry-${encodeURIComponent(entry.id)}`;
   if (targetPart === part) return query;
   return targetPart === "A" ? `../part-a/${query}` : `../part-b/${query}`;
@@ -389,6 +390,22 @@ function appendPromptStudyInfo(card, entry) {
 
 function createTemplateCard(entry, options = {}) {
   const card = createEntityFrame(entry, options);
+  if (reviewOverlay) {
+    appendTemplateGuide(card, entry);
+    const skeleton = createTeachingDetails("骨架与替换槽位");
+    const body = element("div", "teaching-detail-body");
+    for (const paragraph of entry.article.paragraphs) {
+      const sentences = paragraph.sentences.filter((sentence) => (sentence.slots ?? []).length > 0);
+      if (sentences.length === 0) continue;
+      body.append(element("h4", "", paragraph.roleZh ?? paragraph.goalZh ?? `第 ${paragraph.order} 段`));
+      for (const sentence of sentences) body.append(createSlotSkeleton(sentence));
+    }
+    if (body.childElementCount) {
+      skeleton.append(body);
+      card.append(skeleton);
+    }
+    return card;
+  }
   const content = createTeachingDetails("点击展开 · 完整母版、槽位替换与逐句批注", "template-content");
   const article = element("div", "template-article");
   const toolbar = element("div", "template-toolbar");
@@ -490,9 +507,22 @@ function createTopicCard(entry) {
 }
 
 function createPromptCard(entry) {
-  const card = createEntityFrame(entry);
+  const review = reviewOverlay?.essayMeta[entry.id];
+  const card = createEntityFrame(entry, { compact: Boolean(review) });
   const directions = createExamDirections(entry.year, entry.examPart);
   if (directions) card.append(directions);
+  if (review) {
+    const note = createTeachingDetails("审题要点");
+    const body = element("div", "teaching-detail-body");
+    if (entry.examPart === "A") appendParagraph(body, "", entry.materialSummaryZh);
+    appendTextList(body, entry.taskPoints.filter((point) => entry.examPart === "B").map((point) => point.zh));
+    if (body.childElementCount > 0) { note.append(body); card.append(note); }
+    card.append(createReviewedEssay(entry, review));
+    const transfer = createTeachingDetails("换题怎么填");
+    appendParagraph(transfer, "review-note", review.transfer);
+    card.append(transfer, createReviewControl(entry));
+    return card;
+  }
   const brief = element("div", "prompt-brief");
   const material = element("section", "prompt-material");
   material.append(element("h4", "", entry.year ? "审题提示" : "原创练习材料摘要"));
@@ -506,7 +536,7 @@ function createPromptCard(entry) {
   card.append(brief);
 
   const practice = element("details", "prompt-practice");
-  practice.append(element("summary", "", "点击展开 · 第一步：自己审题并查看提纲"));
+  practice.append(element("summary", "", "审题与提纲"));
   const outline = element("section", "outline-panel");
   outline.append(element("h4", "", `建议用时 ${entry.practiceSettings?.recommendedMinutes ?? "—"} 分钟 · 先想后看`));
   const outlineList = element("ol");
@@ -519,7 +549,8 @@ function createPromptCard(entry) {
 
   if (entry.modelResponse) {
     const response = element("details", "model-response");
-    response.append(element("summary", "", "点击展开 · 第二步：显示原创示范与逐句批注"));
+    response.open = true;
+    response.append(element("summary", "", "原创参考范文"));
     const toolbar = element("div", "reading-toolbar");
     toolbar.append(element("span", "", `${entry.modelResponse.label} · ${entry.modelResponse.wordCount} 词`));
     const readingMode = element("button", "", "临时隐藏批注，整篇连读");
@@ -553,6 +584,7 @@ const renderers = {
 };
 
 let activeBundle = null;
+let reviewOverlay = null;
 let allEntries = [];
 let entryIndex = new Map();
 const entityHostStates = new Map();
@@ -562,7 +594,7 @@ let chapterBrowser = null;
 function pageLabel(state, pageIndex) {
   const start = pageIndex * state.pageSize;
   const end = Math.min(start + state.pageSize, state.entries.length);
-  if (state.pageSize === 1) return `${pageIndex + 1} / ${state.entries.length} · ${state.entries[start]?.title ?? ""}`;
+  if (state.pageSize === 1) return state.entries[start]?.title ?? "";
   return `第 ${pageIndex + 1} 组 · ${start + 1}–${end}`;
 }
 
@@ -578,7 +610,14 @@ function createEntityPager(state, locationLabel) {
   for (let index = 0; index < state.pageCount; index += 1) {
     const option = element("option", "", pageLabel(state, index));
     option.value = String(index);
-    select.append(option);
+    const label = state.groupLabels?.get(state.entries[index].id);
+    if (label && select.lastElementChild?.label !== label) {
+      const group = element("optgroup");
+      group.label = label;
+      select.append(group);
+    }
+    if (label) select.lastElementChild.append(option);
+    else select.append(option);
   }
   select.addEventListener("change", () => changePage(Number(select.value), "select"));
   const next = element("button", "entity-page-button", `下一${unit}`);
@@ -613,7 +652,7 @@ function renderHostPage(state, page = state.page) {
   }
 }
 
-function initializeEntityHost(host, entries) {
+function initializeEntityHost(host, entries, groupLabels) {
   const kind = host.dataset.entityKind;
   if (entries.length === 0) {
     host.replaceChildren(element("div", "empty-state", host.dataset.empty));
@@ -624,6 +663,7 @@ function initializeEntityHost(host, entries) {
     kind,
     host,
     entries,
+    groupLabels,
     pageSize,
     pageCount: Math.max(1, Math.ceil(entries.length / pageSize)),
     page: 0,
@@ -646,7 +686,18 @@ function renderEntryHosts(entries) {
   for (const host of document.querySelectorAll("[data-entity-kind]")) {
     const kind = host.dataset.entityKind;
     const matching = partEntries.filter((entry) => entry.kind === kind);
-    initializeEntityHost(host, matching);
+    if (kind === "prompt" && reviewOverlay) {
+      const groupLabels = new Map(
+        reviewOverlay.parts[part].groups.flatMap((group) => group.ids.map((id) => [id, group.title])),
+      );
+      const ordered = [...groupLabels.keys()].map((id) => entryIndex.get(id));
+      for (const entry of matching) {
+        if (groupLabels.has(entry.id)) continue;
+        groupLabels.set(entry.id, "补充题卡");
+        ordered.push(entry);
+      }
+      initializeEntityHost(host, ordered, groupLabels);
+    } else initializeEntityHost(host, matching);
   }
 }
 
@@ -655,12 +706,9 @@ function updateContentStatus(mode, bundle, failures = []) {
   if (mode === "demo") {
     contentStatus.classList.add("is-demo");
     contentStatus.textContent = bundle.disclaimerZh ?? "当前显示结构演示数据，不是正式教材。";
-  } else if (mode === "release") {
+  } else if (mode === "release" || mode === "preview") {
     contentStatus.classList.add("is-ready");
-    contentStatus.textContent = `正式教材已载入：版本 ${bundle.writingContentVersion}，共 ${bundle.entries.length} 个实体。`;
-  } else if (mode === "preview") {
-    contentStatus.classList.add("is-ready");
-    contentStatus.textContent = `预览教材已载入：版本 ${bundle.writingContentVersion}，共 ${bundle.entries.length} 个实体。`;
+    contentStatus.textContent = "";
   } else {
     contentStatus.classList.add("is-error");
     contentStatus.textContent = `尚无可用教材包。页面结构仍可检查；加载诊断：${failures.join("；")}`;
@@ -852,7 +900,8 @@ function showChapter(id, { updateHistory = false, focus = false, scroll = true, 
   }
   setActiveSection(activeChapterId);
   updateChapterBrowser();
-  if (lessonId) activateWritingOverlayLesson(lessonId);
+  const reviewTarget = lessonId ? reviewLessonTarget(lessonId) : null;
+  if (lessonId && !reviewTarget) activateWritingOverlayLesson(lessonId);
   if (updateHistory) {
     const url = new URL(location.href);
     url.searchParams.delete("entry");
@@ -861,8 +910,8 @@ function showChapter(id, { updateHistory = false, focus = false, scroll = true, 
     url.hash = activeChapterId;
     if (url.href !== location.href) history.pushState({}, "", url);
   }
-  if (focus) focusHeading(target.querySelector("h2"));
-  if (scroll) scrollToReadingStart(target);
+  if (focus) focusHeading(reviewTarget?.querySelector("h4") ?? target.querySelector("h2"));
+  if (scroll) scrollToReadingStart(reviewTarget ?? target);
 }
 
 function sectionForEntry(entry) {
@@ -967,7 +1016,7 @@ function configureFontSize() {
 }
 
 function routeFor(itemPart, anchor, entryId = null, lessonId = null) {
-  if (entryId && entryIndex.has(entryId)) return routeForEntry(entryIndex.get(entryId));
+  if (entryId && entryIndex.has(entryId)) return routeForEntry(entryIndex.get(entryId), itemPart);
   const lessonQuery = lessonId ? `?lesson=${encodeURIComponent(lessonId)}` : "";
   if (itemPart === part) return `${lessonQuery}#${anchor}`;
   return itemPart === "A" ? `../part-a/${lessonQuery}#${anchor}` : `../part-b/${lessonQuery}#${anchor}`;
@@ -1108,27 +1157,7 @@ async function configureServiceWorker() {
   try {
     const workerUrl = new URL("../../sw.js", import.meta.url);
     const scopeUrl = new URL("../../", import.meta.url);
-    const registration = await navigator.serviceWorker.register(workerUrl, { scope: scopeUrl.pathname });
-    const banner = document.querySelector("#updateBanner");
-    const showUpdate = () => { banner.hidden = false; };
-    if (registration.waiting) showUpdate();
-    registration.addEventListener("updatefound", () => {
-      const worker = registration.installing;
-      worker?.addEventListener("statechange", () => {
-        if (worker.state === "installed" && navigator.serviceWorker.controller) showUpdate();
-      });
-    });
-    let applyRequested = false;
-    document.querySelector("#applyUpdate").addEventListener("click", () => {
-      const waiting = registration.waiting;
-      if (!waiting) return;
-      applyRequested = true;
-      waiting.postMessage({ type: "SKIP_WAITING" });
-    });
-    navigator.serviceWorker.addEventListener("controllerchange", () => {
-      banner.hidden = true;
-      if (applyRequested) location.reload();
-    });
+    await navigator.serviceWorker.register(workerUrl, { scope: scopeUrl.pathname });
   } catch {
     // Local development and unsupported hosting should not block reading.
   }
@@ -1146,6 +1175,7 @@ async function initialize() {
   allEntries = result.bundle.entries;
   entryIndex = new Map(allEntries.map((entry) => [entry.id, entry]));
   const overlays = Array.isArray(result.bundle.overlays) ? result.bundle.overlays : [];
+  reviewOverlay = overlays.find((overlay) => overlay.format === REVIEW_FORMAT);
   renderEntryHosts(allEntries);
   renderWritingOverlays({
     overlays,

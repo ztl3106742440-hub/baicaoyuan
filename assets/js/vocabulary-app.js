@@ -1,5 +1,6 @@
 import { listWordProgress, saveWordProgress } from "./storage.js";
 import { loadVocabularyData, searchTextForWord } from "./vocabulary-data.js";
+import { configureLearningServiceWorker } from "./learning-shell.js";
 import {
   reinforcementInsertionIndex,
   scheduleWordRating,
@@ -852,35 +853,11 @@ function configureControls() {
   });
 }
 
-async function configureServiceWorker() {
-  if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
-  try {
-    const registration = await navigator.serviceWorker.register(new URL("../../sw.js", import.meta.url), { scope: new URL("../../", import.meta.url).pathname });
-    const banner = document.querySelector("#updateBanner");
-    const showUpdate = () => { banner.hidden = false; };
-    if (registration.waiting) showUpdate();
-    registration.addEventListener("updatefound", () => {
-      registration.installing?.addEventListener("statechange", () => {
-        if (registration.installing?.state === "installed" && navigator.serviceWorker.controller) showUpdate();
-      });
-    });
-    document.querySelector("#applyUpdate").addEventListener("click", () => registration.waiting?.postMessage({ type: "SKIP_WAITING" }));
-    let reloading = false;
-    navigator.serviceWorker.addEventListener("controllerchange", () => {
-      if (reloading) return;
-      reloading = true;
-      location.reload();
-    });
-  } catch {
-    // 本地预览或不支持 Service Worker 时不阻塞学习。
-  }
-}
-
 async function start() {
   configureControls();
   setView(state.view);
   try {
-    const { words, version, mode } = await loadVocabularyData();
+    const { words, version } = await loadVocabularyData();
     let records = [];
     try {
       records = await listWordProgress() ?? [];
@@ -892,7 +869,7 @@ async function start() {
     state.mode = mode;
     state.progress = new Map(records.map((record) => [record.wordId, record]));
     state.searchIndex = new Map(words.map((word) => [word.id, searchTextForWord(word)]));
-    elements.status.textContent = `${mode === "preview" ? "预览" : "正式"}词库 · ${words.length} 词 · v${version.contentVersion}`;
+    elements.status.textContent = `词库 · ${words.length} 词`;
     renderSideStats();
     renderLibrary();
     startStudySession();
@@ -904,7 +881,7 @@ async function start() {
     elements.studyStage.setAttribute("aria-busy", "false");
     elements.status.textContent = "单词数据加载失败";
   }
-  configureServiceWorker();
+  configureLearningServiceWorker();
 }
 
 start();
