@@ -20,6 +20,7 @@ import {
 } from "./writing-overlays.js";
 import { createExamDirections } from "./writing-exam-directions.js";
 import { REVIEW_FORMAT, createReviewedEssay, reviewLessonTarget } from "./writing-review.js";
+import { PART_B_MATERIALS_FORMAT, createPartBPromptMaterials } from "./writing-part-b-materials.js";
 import { configurePageZoom, isCompactPage, watchCompactPage } from "./page-zoom.js";
 
 const part = document.body.dataset.part;
@@ -517,6 +518,8 @@ function createPromptCard(entry) {
     if (entry.examPart === "A") appendParagraph(body, "", entry.materialSummaryZh);
     appendTextList(body, entry.taskPoints.filter((point) => entry.examPart === "B").map((point) => point.zh));
     if (body.childElementCount > 0) { note.append(body); card.append(note); }
+    const materials = createPartBPromptMaterials(partBMaterialsOverlay, entry.id);
+    if (materials) card.append(materials);
     card.append(createReviewedEssay(entry, review));
     const transfer = createTeachingDetails("换题怎么填");
     appendParagraph(transfer, "review-note", review.transfer);
@@ -585,6 +588,7 @@ const renderers = {
 
 let activeBundle = null;
 let reviewOverlay = null;
+let partBMaterialsOverlay = null;
 let allEntries = [];
 let entryIndex = new Map();
 const entityHostStates = new Map();
@@ -901,7 +905,8 @@ function showChapter(id, { updateHistory = false, focus = false, scroll = true, 
   setActiveSection(activeChapterId);
   updateChapterBrowser();
   const reviewTarget = lessonId ? reviewLessonTarget(lessonId) : null;
-  if (lessonId && !reviewTarget) activateWritingOverlayLesson(lessonId);
+  const activated = lessonId && !reviewTarget ? activateWritingOverlayLesson(lessonId) : null;
+  const lessonTarget = reviewTarget ?? (activated instanceof HTMLElement ? activated : null);
   if (updateHistory) {
     const url = new URL(location.href);
     url.searchParams.delete("entry");
@@ -910,8 +915,8 @@ function showChapter(id, { updateHistory = false, focus = false, scroll = true, 
     url.hash = activeChapterId;
     if (url.href !== location.href) history.pushState({}, "", url);
   }
-  if (focus) focusHeading(reviewTarget?.querySelector("h4") ?? target.querySelector("h2"));
-  if (scroll) scrollToReadingStart(reviewTarget ?? target);
+  if (focus) focusHeading(lessonTarget?.querySelector("h4") ?? target.querySelector("h2"));
+  if (scroll) scrollToReadingStart(lessonTarget ?? target);
 }
 
 function sectionForEntry(entry) {
@@ -940,6 +945,8 @@ function goToEntry(entryId, { focus = true, updateHistory = true } = {}) {
   }
   renderHostPage(state, Math.floor(entryPosition / state.pageSize));
   const card = document.getElementById(`entry-${entryId}`);
+  const archive = card.closest(".materials-archive");
+  if (archive) archive.open = true;
   if (focus) focusHeading(card.querySelector("h3"));
   scrollToReadingStart(card);
   return true;
@@ -1167,6 +1174,7 @@ async function initialize() {
   entryIndex = new Map(allEntries.map((entry) => [entry.id, entry]));
   const overlays = Array.isArray(result.bundle.overlays) ? result.bundle.overlays : [];
   reviewOverlay = overlays.find((overlay) => overlay.format === REVIEW_FORMAT);
+  if (part === "B") partBMaterialsOverlay = overlays.find((overlay) => overlay.format === PART_B_MATERIALS_FORMAT);
   renderEntryHosts(allEntries);
   renderWritingOverlays({
     overlays,

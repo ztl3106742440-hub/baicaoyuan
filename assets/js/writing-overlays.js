@@ -1,5 +1,6 @@
 import { createExamDirections } from "./writing-exam-directions.js";
 import { REVIEW_FORMAT, renderReviewAppendix, renderReviewCore, reviewSearchItems } from "./writing-review.js";
+import { PART_B_MATERIALS_FORMAT, partBMaterialsSearchItems, renderPartBMaterials } from "./writing-part-b-materials.js";
 import {
   THEME_BODY_FORMAT,
   activateThemeBodyLesson,
@@ -536,10 +537,7 @@ function renderLiteracyOverlay(overlay, part) {
 
 export function activateWritingOverlayLesson(chapterId) {
   const activate = lessonActivators.get(chapterId);
-  if (activate) {
-    activate();
-    return true;
-  }
+  if (activate) return activate() ?? true;
   return activateThemeBodyLesson(chapterId);
 }
 
@@ -569,6 +567,7 @@ export function writingOverlaySearchItems(overlays, part) {
     });
   }
   result.push(...themeBodySearchItems(themeBody, part));
+  if (part === "B") result.push(...partBMaterialsSearchItems(overlays.find((overlay) => overlay.format === PART_B_MATERIALS_FORMAT)));
   return result;
 }
 
@@ -585,5 +584,9 @@ export function renderWritingOverlays({ overlays = [], part, entryIndex, renderT
   if (literacy) renderLiteracyOverlay(literacy, part);
   renderThemeBodyOverlay({ overlay: themeBody, part });
   if (review) renderReviewAppendix(review, part);
+  if (part === "B") {
+    const materials = overlays.find((overlay) => overlay.format === PART_B_MATERIALS_FORMAT);
+    renderPartBMaterials(materials, (id, activate) => lessonActivators.set(id, activate));
+  }
   return writingOverlaySearchItems(overlays, part);
 }
