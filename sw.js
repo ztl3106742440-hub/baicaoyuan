@@ -1,6 +1,6 @@
 const CACHE_PREFIX = "kaoyan-english";
-const SHELL_CACHE = `${CACHE_PREFIX}-shell-page-zoom-3`;
-const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-page-zoom-3`;
+const SHELL_CACHE = `${CACHE_PREFIX}-shell-page-zoom-8`;
+const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-page-zoom-8`;
 const scopeUrl = new URL(self.registration.scope);
 const shellPaths = [
   "./",
@@ -18,6 +18,8 @@ const shellPaths = [
   "./vocabulary/reading/index.html",
   "./manifest.webmanifest",
   "./assets/css/writing.css",
+  "./assets/css/writing-v8-course.css",
+  "./assets/css/writing-v8a-course.css",
   "./assets/css/vocabulary.css",
   "./assets/css/study-materials.css",
   "./assets/css/page-zoom.css",
@@ -34,6 +36,9 @@ const shellPaths = [
   "./assets/js/writing-exam-directions.js",
   "./assets/js/writing-review.js",
   "./assets/js/writing-part-b-materials.js",
+  "./assets/js/writing-v8-course.js",
+  "./assets/js/writing-v8a-course.js",
+  "./assets/js/writing-v8b-data.js",
   "./assets/js/writing-overlays.js",
   "./assets/js/writing-theme-body.js",
   "./assets/js/writing-app.js",

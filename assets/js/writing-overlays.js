@@ -1,6 +1,8 @@
 import { createExamDirections } from "./writing-exam-directions.js";
 import { REVIEW_FORMAT, renderReviewAppendix, renderReviewCore, reviewSearchItems } from "./writing-review.js";
 import { PART_B_MATERIALS_FORMAT, partBMaterialsSearchItems, renderPartBMaterials } from "./writing-part-b-materials.js";
+import { getV8Course, renderV8Course, v8SearchItems } from "./writing-v8-course.js";
+import { getPartACourse, renderV8ACourse, v8aSearchItems } from "./writing-v8a-course.js";
 import {
   THEME_BODY_FORMAT,
   activateThemeBodyLesson,
@@ -542,10 +544,13 @@ export function activateWritingOverlayLesson(chapterId) {
 }
 
 export function writingOverlaySearchItems(overlays, part) {
+  const partACourse = part === "A" ? getPartACourse(overlays) : null;
+  if (partACourse) return v8aSearchItems(partACourse);
+  const v8 = part === "B" ? getV8Course(overlays) : null;
   const literacy = overlays.find((overlay) => overlay.format === PROMPT_LITERACY_FORMAT);
   const themeBody = overlays.find((overlay) => overlay.format === THEME_BODY_FORMAT);
   const review = overlays.find((overlay) => overlay.format === REVIEW_FORMAT);
-  const result = review ? reviewSearchItems(review, part) : [{
+  const result = v8 ? v8SearchItems(v8) : review ? reviewSearchItems(review, part) : [{
     part,
     anchor: `${part.toLowerCase()}-core`,
     title: "核心背诵与跨题迁移",
@@ -567,12 +572,23 @@ export function writingOverlaySearchItems(overlays, part) {
     });
   }
   result.push(...themeBodySearchItems(themeBody, part));
-  if (part === "B") result.push(...partBMaterialsSearchItems(overlays.find((overlay) => overlay.format === PART_B_MATERIALS_FORMAT)));
+  if (part === "B" && !v8) result.push(...partBMaterialsSearchItems(overlays.find((overlay) => overlay.format === PART_B_MATERIALS_FORMAT)));
   return result;
 }
 
-export function renderWritingOverlays({ overlays = [], part, entryIndex, renderTemplateCard }) {
+export function renderWritingOverlays({ overlays = [], part, entryIndex, renderTemplateCard, selectPrompt, createReviewControl }) {
   lessonActivators.clear();
+  if (part === "A") {
+    const partACourse = getPartACourse(overlays);
+    if (partACourse) {
+      renderV8ACourse(partACourse, {
+        register: (id, activate) => lessonActivators.set(id, activate),
+        createReviewControl,
+        entryIndex,
+      });
+      return null;
+    }
+  }
   const core = overlays.find((overlay) => overlay.format === CORE_TRANSFER_FORMAT);
   const literacy = overlays.find((overlay) => overlay.format === PROMPT_LITERACY_FORMAT);
   const themeBody = overlays.find((overlay) => overlay.format === THEME_BODY_FORMAT);
@@ -587,6 +603,12 @@ export function renderWritingOverlays({ overlays = [], part, entryIndex, renderT
   if (part === "B") {
     const materials = overlays.find((overlay) => overlay.format === PART_B_MATERIALS_FORMAT);
     renderPartBMaterials(materials, (id, activate) => lessonActivators.set(id, activate));
+    const v8 = getV8Course(overlays);
+    if (v8) return renderV8Course(v8, {
+      register: (id, activate) => lessonActivators.set(id, activate),
+      selectPrompt,
+      hasPrompt: (id) => entryIndex.get(id)?.examPart === "B",
+    });
   }
-  return writingOverlaySearchItems(overlays, part);
+  return null;
 }

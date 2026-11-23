@@ -1,12 +1,12 @@
 {
   "appVersion": "0.5.0",
-  "cacheVersion": "writing-0.5.0-2c07fb918e25c815",
-  "generatedAt": "2026-11-20T12:29:09.057Z",
+  "cacheVersion": "writing-0.5.0-e42f545d4e37acef",
+  "generatedAt": "2026-11-23T11:22:07.860Z",
   "mode": "preview",
   "schemaVersion": 1,
-  "writingContentVersion": 6,
+  "writingContentVersion": 10,
   "writingData": {
-    "bytes": 868342,
+    "bytes": 1266252,
     "entryCount": 92,
     "kindCounts": {
       "expression": 40,
@@ -14,15 +14,17 @@
       "template": 7,
       "topic": 17
     },
-    "overlayCount": 5,
+    "overlayCount": 7,
     "overlayFormats": [
       "baicaoyuan-v7-study-overlay",
       "baicaoyuan-v7.1-prompt-literacy-overlay",
       "baicaoyuan-v7.2-theme-body-overlay",
       "baicaoyuan-writing-review-overlay",
-      "baicaoyuan-writing-part-b-materials-overlay"
+      "baicaoyuan-writing-part-b-materials-overlay",
+      "baicaoyuan-writing-v8-unified-essay-course",
+      "baicaoyuan-writing-v8b-high-retention-application-course"
     ],
-    "sha256": "2c07fb918e25c8155234a1b9cc87b4632e78f65a9f64cefde240ab4db437a84d",
-    "url": "data/writing.preview.2c07fb918e25c8155234a1b9cc87b4632e78f65a9f64cefde240ab4db437a84d.json"
+    "sha256": "e42f545d4e37acefb24418ab34648c0be91e50cc018e33756a39a4587999588c",
+    "url": "data/writing.preview.e42f545d4e37acefb24418ab34648c0be91e50cc018e33756a39a4587999588c.json"
   }
 }

@@ -21,6 +21,8 @@ import {
 import { createExamDirections } from "./writing-exam-directions.js";
 import { REVIEW_FORMAT, createReviewedEssay, reviewLessonTarget } from "./writing-review.js";
 import { PART_B_MATERIALS_FORMAT, createPartBPromptMaterials } from "./writing-part-b-materials.js";
+import { createV8PromptExample, getV8Course, v8PromptId } from "./writing-v8-course.js";
+import { getPartACourse } from "./writing-v8a-course.js";
 import { configurePageZoom, isCompactPage, watchCompactPage } from "./page-zoom.js";
 
 const part = document.body.dataset.part;
@@ -81,7 +83,7 @@ const themeInformation = {
   },
 };
 const staticSearchItems = [
-  ["A", "a-core", "主背", "万能加分句、整篇主背、跨题对照和题型短块"],
+  ["A", "a-core", "主背", "三段结构、整篇主背和功能短块"],
   ["A", "a-overview", "审题与体裁", "收信人、目的、任务、语气、格式、邮件与通知"],
   ["A", "a-templates", "四组核心功能母版", "邀请安排、建议推荐、回复说明、通知招募"],
   ["A", "a-prompts", "小作文真题范文", "题意、原创范文和段落讲解"],
@@ -510,6 +512,7 @@ function createTopicCard(entry) {
 function createPromptCard(entry) {
   const review = reviewOverlay?.essayMeta[entry.id];
   const card = createEntityFrame(entry, { compact: Boolean(review) });
+  const v8 = entry.examPart === "B" ? createV8PromptExample(v8Course, entry) : null;
   const directions = createExamDirections(entry.year, entry.examPart);
   if (directions) card.append(directions);
   if (review) {
@@ -519,10 +522,14 @@ function createPromptCard(entry) {
     appendTextList(body, entry.taskPoints.filter((point) => entry.examPart === "B").map((point) => point.zh));
     if (body.childElementCount > 0) { note.append(body); card.append(note); }
     const materials = createPartBPromptMaterials(partBMaterialsOverlay, entry.id);
-    if (materials) card.append(materials);
-    card.append(createReviewedEssay(entry, review));
+    if (materials && !v8) card.append(materials);
+    if (v8) card.append(v8);
+    const essay = createReviewedEssay(entry, review);
+    if (v8) essay.classList.add("v8-original-essay");
+    card.append(essay);
     const transfer = createTeachingDetails("换题怎么填");
     appendParagraph(transfer, "review-note", review.transfer);
+    if (materials && v8) transfer.append(materials);
     card.append(transfer, createReviewControl(entry));
     return card;
   }
@@ -549,9 +556,11 @@ function createPromptCard(entry) {
   card.append(practice);
 
   appendPromptStudyInfo(card, entry);
+  if (v8) card.append(v8);
 
   if (entry.modelResponse) {
     const response = element("details", "model-response");
+    if (v8) response.classList.add("v8-original-essay");
     response.open = true;
     response.append(element("summary", "", "原创参考范文"));
     const toolbar = element("div", "reading-toolbar");
@@ -589,6 +598,9 @@ const renderers = {
 let activeBundle = null;
 let reviewOverlay = null;
 let partBMaterialsOverlay = null;
+let v8Course = null;
+let partACourse = null;
+let syncV8PromptEntry = null;
 let allEntries = [];
 let entryIndex = new Map();
 const entityHostStates = new Map();
@@ -836,17 +848,36 @@ function configureSidebar() {
 }
 
 function configureLearningUtilities() {
-  const collapseButton = document.querySelector("#collapseAllContent");
-  const collapseLabel = collapseButton?.querySelector(".sidebar-tool-label");
-  collapseButton?.addEventListener("click", () => {
-    const openItems = [...document.querySelectorAll("#mainContent details[open]")];
-    for (const details of openItems) details.open = false;
-    if (collapseLabel) {
-      collapseLabel.textContent = openItems.length > 0 ? `已收起 ${openItems.length} 项` : "当前没有展开内容";
-      setTimeout(() => { collapseLabel.textContent = "收起全部展开内容"; }, 1200);
+  const main = document.querySelector("#mainContent");
+  const seenDetails = new WeakSet();
+  let autoExpand = true;
+
+  function initializeDetails(node) {
+    if (!(node instanceof Element) || !main.contains(node)) return;
+    const details = [...node.querySelectorAll("details")];
+    if (node.matches("details")) details.unshift(node);
+    for (const item of details) {
+      if (seenDetails.has(item)) continue;
+      seenDetails.add(item);
+      if (autoExpand) item.open = true;
     }
-    if (isNarrow()) setDrawer(false);
+  }
+
+  initializeDetails(main);
+  const observer = new MutationObserver((records) => {
+    for (const record of records) {
+      for (const node of record.addedNodes) initializeDetails(node);
+    }
   });
+  observer.observe(main, { childList: true, subtree: true });
+
+  for (const [id, open] of [["expandAllContent", true], ["collapseAllContent", false]]) {
+    document.getElementById(id).addEventListener("click", () => {
+      autoExpand = open;
+      for (const details of main.querySelectorAll("details")) details.open = open;
+      if (isNarrow()) setDrawer(false);
+    });
+  }
 
   for (const link of document.querySelectorAll(".top-page-button[data-part-link]")) {
     if (link.getAttribute("aria-current") === "page") {
@@ -893,6 +924,12 @@ function focusHeading(heading) {
   heading?.focus({ preventScroll: true });
 }
 
+function openStudyArchive(target) {
+  for (let node = target?.parentElement; node; node = node.parentElement) {
+    if (node.matches("details.v8-archive, details.materials-archive")) node.open = true;
+  }
+}
+
 function showChapter(id, { updateHistory = false, focus = false, scroll = true, lessonId = null } = {}) {
   const target = currentPartSections.find((section) => section.id === id) ?? currentPartSections[0];
   if (!target) return;
@@ -907,6 +944,9 @@ function showChapter(id, { updateHistory = false, focus = false, scroll = true, 
   const reviewTarget = lessonId ? reviewLessonTarget(lessonId) : null;
   const activated = lessonId && !reviewTarget ? activateWritingOverlayLesson(lessonId) : null;
   const lessonTarget = reviewTarget ?? (activated instanceof HTMLElement ? activated : null);
+  openStudyArchive(lessonTarget);
+  const archive = activated === true && target.querySelector(":scope > details.v8-archive");
+  if (archive) archive.open = true;
   if (updateHistory) {
     const url = new URL(location.href);
     url.searchParams.delete("entry");
@@ -915,7 +955,7 @@ function showChapter(id, { updateHistory = false, focus = false, scroll = true, 
     url.hash = activeChapterId;
     if (url.href !== location.href) history.pushState({}, "", url);
   }
-  if (focus) focusHeading(lessonTarget?.querySelector("h4") ?? target.querySelector("h2"));
+  if (focus) focusHeading(lessonTarget?.querySelector("h4, h3, summary") ?? target.querySelector("h2"));
   if (scroll) scrollToReadingStart(lessonTarget ?? target);
 }
 
@@ -931,6 +971,11 @@ function goToEntry(entryId, { focus = true, updateHistory = true } = {}) {
     location.href = routeForEntry(entry);
     return true;
   }
+  if (part === "A" && partACourse) {
+    const sample = entry.kind === "prompt" ? partACourse.cases.find((item) => item.matchedExistingPromptId === entryId) : null;
+    showChapter(sectionForEntry(entry), { updateHistory, focus, lessonId: sample ? `v8a-case-${sample.id}` : null });
+    return true;
+  }
   const state = entityHostStates.get(entry.kind);
   const entryPosition = state?.entries.findIndex((candidate) => candidate.id === entryId) ?? -1;
   if (!state || entryPosition < 0) return false;
@@ -944,9 +989,9 @@ function goToEntry(entryId, { focus = true, updateHistory = true } = {}) {
     if (url.href !== location.href) history.pushState({}, "", url);
   }
   renderHostPage(state, Math.floor(entryPosition / state.pageSize));
+  if (entry.kind === "prompt") syncV8PromptEntry?.(entryId);
   const card = document.getElementById(`entry-${entryId}`);
-  const archive = card.closest(".materials-archive");
-  if (archive) archive.open = true;
+  openStudyArchive(card);
   if (focus) focusHeading(card.querySelector("h3"));
   scrollToReadingStart(card);
   return true;
@@ -1001,6 +1046,12 @@ function configureChapterNavigation() {
       showChapter(link.hash.slice(1), { updateHistory: true, focus: true });
     });
   }
+  document.querySelector(".writing-reader").addEventListener("click", (event) => {
+    const link = event.target.closest("a[data-v8-lesson]");
+    if (!link || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    showChapter(link.hash.slice(1), { updateHistory: true, focus: true, lessonId: link.dataset.v8Lesson });
+  });
   addEventListener("popstate", () => showLocation());
 }
 
@@ -1021,9 +1072,12 @@ function routeFor(itemPart, anchor, entryId = null, lessonId = null) {
 
 function dynamicSearchItems(entries) {
   const result = [];
+  const merged = new Set(v8Course?.cases.map(v8PromptId) ?? []);
   for (const entry of entries) {
+    if (entry.kind === "prompt" && merged.has(entry.id)) continue;
     const parts = entry.examPart === "both" ? ["A", "B"] : [entry.examPart];
     for (const entryPart of parts) {
+      if (entryPart === "A" && partACourse) continue;
       result.push({
         part: entryPart,
         anchor: `entry-${entry.id}`,
@@ -1167,22 +1221,32 @@ async function initialize() {
   configurePageZoom(() => setDrawer(false, { restoreFocus: false }));
   trackAppBarHeight();
   configureSidebar();
-  configureLearningUtilities();
   const result = await loadWritingData();
   activeBundle = result.bundle;
   allEntries = result.bundle.entries;
   entryIndex = new Map(allEntries.map((entry) => [entry.id, entry]));
   const overlays = Array.isArray(result.bundle.overlays) ? result.bundle.overlays : [];
+  v8Course = getV8Course(overlays);
+  partACourse = getPartACourse(overlays);
   reviewOverlay = overlays.find((overlay) => overlay.format === REVIEW_FORMAT);
   if (part === "B") partBMaterialsOverlay = overlays.find((overlay) => overlay.format === PART_B_MATERIALS_FORMAT);
-  renderEntryHosts(allEntries);
-  renderWritingOverlays({
+  if (!(part === "A" && partACourse)) renderEntryHosts(allEntries);
+  syncV8PromptEntry = renderWritingOverlays({
     overlays,
     part,
     entryIndex,
     renderTemplateCard: createTemplateCard,
+    createReviewControl,
+    selectPrompt: (id) => {
+      const state = entityHostStates.get("prompt");
+      const index = state.entries.findIndex((entry) => entry.id === id);
+      const cardId = `entry-${id}`;
+      if (!document.getElementById(cardId)) renderHostPage(state, Math.floor(index / state.pageSize));
+      return document.getElementById(cardId);
+    },
   });
   updateContentStatus(result.mode, result.bundle, result.failures);
+  configureLearningUtilities();
   configureChapterNavigation();
   const overlaySearchItems = ["A", "B"].flatMap((targetPart) => writingOverlaySearchItems(overlays, targetPart));
   configureSearch(allEntries, overlaySearchItems);
