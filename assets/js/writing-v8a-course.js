@@ -1,3 +1,4 @@
+import { createEssayPicker } from "./writing-essay-picker.js";
 import { getV8BCourse, v8bFunctions, v8bView, V8B_FORMAT } from "./writing-v8b-data.js";
 
 export const V8A_FORMAT = "baicaoyuan-writing-v8a-unified-application-course";
@@ -148,11 +149,12 @@ function renderEssay(item, { showLegend = false, showTitle = true } = {}) {
   return article;
 }
 
-function labelledSelect(label) {
-  const field = el("label", "v8-field");
+function labelledSelect(label, { essay = false } = {}) {
+  const field = el(essay ? "div" : "label", "v8-field");
   const select = el("select", "theme-item-select");
-  field.append(el("span", "", label), select);
-  return { field, select };
+  const picker = essay ? createEssayPicker(select, label) : null;
+  field.append(el("span", "", label), picker?.root ?? select);
+  return { field, select, picker };
 }
 
 function optionsFor(select, items, label = (item) => item.title) {
@@ -175,9 +177,10 @@ function renderCore(course, lookup) {
   }
   route.append(steps, legend());
   const primary = panel("两篇整背");
-  const { field, select } = labelledSelect("选择一篇主背范文");
+  const { field, select, picker } = labelledSelect("选择一篇主背范文", { essay: true });
   const models = course.studyPlan.primaryComplete.map((id) => lookup.get(id));
   optionsFor(select, models);
+  picker.sync();
   const stage = el("div", "v8a-stage");
   const show = () => stage.replaceChildren(renderEssay(lookup.get(select.value), { showTitle: false }));
   select.addEventListener("change", show);
@@ -250,10 +253,11 @@ function renderTemplates(course, lookup, register) {
 
 function renderPairStudy(pairs, lookup) {
   const box = panel("同一句架，换一道题");
-  const { field, select } = labelledSelect("选择一组对照");
+  const { field, select, picker } = labelledSelect("选择一组对照", { essay: true });
   select.dataset.v8bPair = "";
   select.append(...pairs.map(([left, right], index) =>
     new Option(`${lookup.get(left).title} ↔ ${lookup.get(right).title}`, String(index))));
+  picker.sync();
   const stage = el("div", "v8-two-col v8a-stage");
   const show = () => {
     stage.replaceChildren(...pairs[select.selectedIndex].map((id) => {
@@ -279,7 +283,7 @@ function renderExpressions(course, lookup) {
   const box = panel("同一功能，换一道题");
   box.append(legend());
   const { field: typeField, select: group } = labelledSelect("功能");
-  const { field: exampleField, select: example } = labelledSelect("本题示范");
+  const { field: exampleField, select: example, picker } = labelledSelect("本题示范", { essay: true });
   const recommendation = { id: "recommend", title: "推荐分支", related: course.studyPlan.relatedComparisons[4] };
   const groups = [...course.blueprint.modules, recommendation];
   optionsFor(group, groups, (item) => item.id === "recommend" ? item.title : `${item.id} · ${item.title}`);
@@ -295,6 +299,7 @@ function renderExpressions(course, lookup) {
   function refresh() {
     const selected = groups.find(({ id }) => id === group.value);
     optionsFor(example, selected.related.map((id) => lookup.get(id)));
+    picker.sync();
     show();
   }
   group.addEventListener("change", refresh);
@@ -325,8 +330,8 @@ function renderScenes(course, register) {
 function renderLibrary(course, { register, createReviewControl, entryIndex }) {
   const library = panel("按题选范文");
   const select = el("select", "theme-item-select");
-  select.setAttribute("aria-label", "选择范文");
   select.dataset.v8aPicker = "";
+  const picker = createEssayPicker(select, "选择范文");
   const previous = el("button", "ghost-button v8a-page-button", "上一篇");
   const next = el("button", "ghost-button v8a-page-button", "下一篇");
   previous.type = next.type = "button";
@@ -335,7 +340,7 @@ function renderLibrary(course, { register, createReviewControl, entryIndex }) {
   const position = el("p", "v8-caption");
   position.setAttribute("aria-live", "polite");
   const pager = el("div", "v8a-pager");
-  pager.append(previous, select, next);
+  pager.append(previous, picker.root, next);
   const stage = el("div", "v8-library-stage");
   const { field, select: filter } = labelledSelect("交际功能");
   const grouped = course.format === V8B_FORMAT;
@@ -356,6 +361,7 @@ function renderLibrary(course, { register, createReviewControl, entryIndex }) {
     const sample = visible[index];
     if (!sample) return;
     select.selectedIndex = index;
+    picker.sync();
     previous.disabled = index === 0;
     next.disabled = index === visible.length - 1;
     position.textContent = `第 ${index + 1} / ${visible.length} 篇`;

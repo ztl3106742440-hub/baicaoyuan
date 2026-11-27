@@ -576,7 +576,7 @@ export function writingOverlaySearchItems(overlays, part) {
   return result;
 }
 
-export function renderWritingOverlays({ overlays = [], part, entryIndex, renderTemplateCard, selectPrompt, createReviewControl }) {
+export function renderWritingOverlays({ overlays = [], part, entryIndex, renderTemplateCard, selectPrompt, createReviewControl, scrollToReadingStart }) {
   lessonActivators.clear();
   if (part === "A") {
     const partACourse = getPartACourse(overlays);
@@ -607,6 +607,7 @@ export function renderWritingOverlays({ overlays = [], part, entryIndex, renderT
     if (v8) return renderV8Course(v8, {
       register: (id, activate) => lessonActivators.set(id, activate),
       selectPrompt,
+      scrollToReadingStart,
       hasPrompt: (id) => entryIndex.get(id)?.examPart === "B",
     });
   }

@@ -1,3 +1,5 @@
+import { createEssayPicker } from "./writing-essay-picker.js";
+
 export const V8_FORMAT = "baicaoyuan-writing-v8-unified-essay-course";
 
 const existingPromptIds = {
@@ -257,16 +259,19 @@ function archiveChildren(chapter, label) {
   return archive;
 }
 
-function renderTemplates(course) {
+function renderTemplates(course, scrollToReadingStart) {
   const chapter = document.getElementById("b-templates");
   const old = archiveChildren(chapter, "历史参考 · 旧版母版");
-  const guide = section("母版填槽与跨题对照");
-  guide.append(element("p", "v8-caption", "对照蓝色位置怎么换，固定句架可以留在原位。"));
+  const guide = element("section", "v8-panel v8-template-guide");
+  const cards = [];
   for (const [mode, ids, keys] of [
     ["A", ["2023", "2015"], ["effectNoun", "effect1", "mechanism1", "effect2"]],
     ["B", ["2025", "2026"], ["phenomenon", "cause1", "effect1", "cause2", "whether2"]],
   ]) {
-    const pair = disclosure(`${modeNames[mode]} · 看同一语法槽如何换题`);
+    const body = section(modeNames[mode], "v8-template-body");
+    body.dataset.v8TemplateMode = mode;
+    body.append(frameParagraph(course.templates[`body${mode}`], course.slotLabels));
+    const pair = disclosure("看同一语法槽如何换题", "v8-template-comparison");
     const columns = element("div", "v8-two-col");
     for (const id of ids) {
       const item = course.cases.find((sample) => sample.id === id);
@@ -275,10 +280,52 @@ function renderTemplates(course) {
         lessonLink("查看三段实填", "b-prompts", caseKey(item)));
       columns.append(card);
     }
-    pair.append(frameParagraph(course.templates[`body${mode}`], course.slotLabels), columns);
-    guide.append(pair);
+    pair.append(columns);
+    body.append(pair);
+    cards.push(body);
   }
+  let index = 0;
+  const top = makePager("顶部");
+  const bottom = makePager("底部");
+  guide.append(top.pager, ...cards, bottom.pager);
   old.before(guide);
+  update();
+
+  function makePager(locationLabel) {
+    const pager = element("nav", "v8-template-pager");
+    pager.dataset.v8TemplatePager = "";
+    pager.setAttribute("aria-label", `大作文母版${locationLabel}翻篇`);
+    const previous = makeButton("上一篇", -1);
+    const next = makeButton("下一篇", 1);
+    const position = element("span", "v8-template-position");
+    pager.append(previous, position, next);
+    return { pager, previous, position, next };
+  }
+
+  function makeButton(label, step) {
+    const button = element("button", "entity-page-button", label);
+    button.type = "button";
+    button.addEventListener("click", () => {
+      const destination = index + step;
+      if (!cards[destination]) return;
+      index = destination;
+      update();
+      const heading = cards[index].querySelector("h3");
+      heading.tabIndex = -1;
+      heading.focus({ preventScroll: true });
+      scrollToReadingStart(guide);
+    });
+    return button;
+  }
+
+  function update() {
+    cards.forEach((card, cardIndex) => { card.hidden = cardIndex !== index; });
+    for (const { previous, position, next } of [top, bottom]) {
+      previous.disabled = index === 0;
+      next.disabled = index === cards.length - 1;
+      position.textContent = `${index + 1} / ${cards.length}`;
+    }
+  }
 }
 
 function renderTopics(course, register) {
@@ -344,52 +391,33 @@ function renderTopics(course, register) {
   oldTopics.before(index);
 }
 
-function field(label, control) {
-  const wrapper = element("label", "v8-field");
-  wrapper.append(element("span", "", label), control);
-  return wrapper;
-}
-
-function selectFor(options) {
-  const select = element("select", "theme-item-select");
-  select.append(...options.map(([value, label]) => new Option(label, value)));
-  return select;
-}
-
 function renderLibrary(course, register, selectPrompt, hasPrompt) {
   const oldHost = document.querySelector('#b-prompts [data-entity-kind="prompt"]');
-  const library = section("V8 迁移库");
+  const library = section("按题选范文");
   library.dataset.v8Library = "";
-  const items = [...course.cases].sort((a, b) => a.priority - b.priority || (b.year ?? 0) - (a.year ?? 0));
-  const source = selectFor([["", "全部题目"], ["past", "2010–2026 真题"], ["original", "原创模拟"]]);
-  const material = selectFor([["", "全部材料"], ...Object.entries(materialNames)]);
-  const mode = selectFor([["", "A 和 B"], ...Object.entries(modeNames)]);
-  const topic = selectFor([["", "全部主题"], ...course.topicPacks.map((pack) => [pack.id, pack.title])]);
-  const filters = disclosure("按年份、材料、主题或 A/B 筛选");
-  const controls = element("div", "v8-filters");
-  const search = element("input", "v8-query");
-  search.type = "search";
-  search.placeholder = "例：2026、龙舟、air conditioner";
-  controls.append(field("年份、题材或英文词组", search), field("题目来源", source), field("材料", material), field("主体框架", mode), field("主题", topic));
-  filters.append(controls);
-  const picker = selectFor([]);
-  picker.dataset.v8Picker = "";
+  const papers = course.cases.filter((item) => item.year).sort((a, b) => b.year - a.year);
+  const originals = course.cases.filter((item) => !item.year).sort((a, b) => a.priority - b.priority);
+  const items = [...papers, ...originals];
+  const select = element("select", "theme-item-select");
+  select.dataset.v8Picker = "";
+  for (const [title, cases] of [["历年真题", papers], ["原创模拟", originals]]) {
+    const group = element("optgroup");
+    group.label = title;
+    group.append(...cases.map((item) => new Option(caseTitle(item), item.id)));
+    select.append(group);
+  }
+  const picker = createEssayPicker(select, "选择范文");
   const stage = element("div", "v8-library-stage");
-  const resultStatus = element("p", "v8-caption");
-  const oldButton = element("button", "ghost-button", "查看原有题卡目录");
+  const oldButton = element("button", "ghost-button v8-old-prompts", "查看原有题卡目录");
   oldButton.type = "button";
-  library.append(filters, field("选一题对照", picker), resultStatus, stage, oldButton);
+  library.append(picker.root, stage, oldButton);
   oldHost.before(library);
-  let visible = items;
 
   function showCase(item, reveal = false) {
-    oldHost.classList.toggle("v8-synced-prompts", Boolean(item));
+    oldHost.classList.add("v8-synced-prompts");
     stage.replaceChildren();
-    if (!item) {
-      oldHost.hidden = true;
-      return null;
-    }
-    picker.value = item.id;
+    select.value = item.id;
+    picker.sync();
     const id = v8PromptId(item);
     if (id && hasPrompt(id)) {
       oldHost.hidden = false;
@@ -404,53 +432,32 @@ function renderLibrary(course, register, selectPrompt, hasPrompt) {
     return essay;
   }
 
-  function refresh(id = picker.value, reveal = false) {
-    const term = search.value.trim().toLocaleLowerCase("zh-CN");
-    visible = items.filter((item) =>
-      (!source.value || (item.year ? "past" : "original") === source.value) &&
-      (!material.value || item.materialForm === material.value) &&
-      (!mode.value || item.mode === mode.value) &&
-      (!topic.value || item.category === topic.value) &&
-      (!term || [item.id, item.title, item.topic, item.routeZh, ...item.plainParagraphs].join(" ").toLocaleLowerCase("zh-CN").includes(term)));
-    picker.replaceChildren(...visible.map((item) => new Option(caseTitle(item), item.id)));
-    picker.disabled = !visible.length;
-    resultStatus.textContent = visible.length ? `${visible.length} 道 · 同题可展开 V8 写法` : "没有匹配题目。";
-    return showCase(visible.find((item) => item.id === id) ?? visible[0], reveal);
-  }
-
-  function reset(id, reveal = false) {
-    for (const control of [search, source, material, mode, topic]) control.value = "";
-    return refresh(id, reveal);
-  }
-
   function showOld() {
     stage.replaceChildren();
-    picker.value = "";
+    select.selectedIndex = -1;
+    picker.sync();
     oldHost.hidden = false;
     oldHost.classList.remove("v8-synced-prompts");
-    resultStatus.textContent = "已显示原有题卡目录。";
   }
 
   oldButton.addEventListener("click", showOld);
-  for (const control of [source, material, mode, topic]) control.addEventListener("change", () => refresh());
-  search.addEventListener("input", () => refresh());
-  picker.addEventListener("change", () => {
-    resultStatus.textContent = `${visible.length} 道 · 同题可展开 V8 写法`;
-    showCase(visible.find((item) => item.id === picker.value));
+  select.addEventListener("change", () => {
+    const item = items.find((sample) => sample.id === select.value);
+    if (item) showCase(item);
   });
-  for (const item of items) register(caseKey(item), () => reset(item.id, true));
-  refresh("2023");
+  for (const item of items) register(caseKey(item), () => showCase(item, true));
+  showCase(items.find((item) => item.id === "2023") ?? items[0]);
   return (id) => {
     const item = items.find((candidate) => v8PromptId(candidate) === id);
-    if (item) reset(item.id);
+    if (item) showCase(item);
     else showOld();
   };
 }
 
-export function renderV8Course(course, { register, selectPrompt, hasPrompt }) {
+export function renderV8Course(course, { register, selectPrompt, hasPrompt, scrollToReadingStart }) {
   const host = document.querySelector('#b-core [data-writing-overlay="core-transfer"]');
   renderCore(course, host, register);
-  renderTemplates(course);
+  renderTemplates(course, scrollToReadingStart);
   renderTopics(course, register);
   return renderLibrary(course, register, selectPrompt, hasPrompt);
 }

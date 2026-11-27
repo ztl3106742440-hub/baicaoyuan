@@ -19,6 +19,7 @@ import {
   writingOverlaySearchItems,
 } from "./writing-overlays.js";
 import { createExamDirections } from "./writing-exam-directions.js";
+import { createEssayPicker } from "./writing-essay-picker.js";
 import { REVIEW_FORMAT, createReviewedEssay, reviewLessonTarget } from "./writing-review.js";
 import { PART_B_MATERIALS_FORMAT, createPartBPromptMaterials } from "./writing-part-b-materials.js";
 import { createV8PromptExample, getV8Course, v8PromptId } from "./writing-v8-course.js";
@@ -516,11 +517,13 @@ function createPromptCard(entry) {
   const directions = createExamDirections(entry.year, entry.examPart);
   if (directions) card.append(directions);
   if (review) {
-    const note = createTeachingDetails("审题要点");
-    const body = element("div", "teaching-detail-body");
-    if (entry.examPart === "A") appendParagraph(body, "", entry.materialSummaryZh);
-    appendTextList(body, entry.taskPoints.filter((point) => entry.examPart === "B").map((point) => point.zh));
-    if (body.childElementCount > 0) { note.append(body); card.append(note); }
+    if (entry.examPart === "A" && entry.materialSummaryZh) {
+      const note = createTeachingDetails("审题要点");
+      const body = element("div", "teaching-detail-body");
+      appendParagraph(body, "", entry.materialSummaryZh);
+      note.append(body);
+      card.append(note);
+    }
     const materials = createPartBPromptMaterials(partBMaterialsOverlay, entry.id);
     if (materials && !v8) card.append(materials);
     if (v8) card.append(v8);
@@ -639,14 +642,17 @@ function createEntityPager(state, locationLabel) {
   const next = element("button", "entity-page-button", `下一${unit}`);
   next.type = "button";
   next.addEventListener("click", () => changePage(state.page + 1, "next"));
-  pager.append(previous, select, next);
-  state.pagers.push({ pager, previous, select, next });
+  const picker = state.kind === "prompt" ? createEssayPicker(select, "选择范文") : null;
+  pager.append(previous, picker?.root ?? select, next);
+  state.pagers.push({ pager, previous, select, next, picker });
   return pager;
 
   function changePage(page, control) {
     renderHostPage(state, page);
     const topControls = state.pagers[0];
-    const target = topControls[control].disabled ? topControls.select : topControls[control];
+    const target = control === "select" || topControls[control].disabled
+      ? topControls.picker?.trigger ?? topControls.select
+      : topControls[control];
     target.focus({ preventScroll: true });
     scrollToReadingStart(state.host);
   }
@@ -665,6 +671,7 @@ function renderHostPage(state, page = state.page) {
     controls.previous.disabled = state.page === 0;
     controls.next.disabled = state.page === state.pageCount - 1;
     controls.select.value = String(state.page);
+    controls.picker?.sync();
   }
 }
 
@@ -850,6 +857,7 @@ function configureSidebar() {
 function configureLearningUtilities() {
   const main = document.querySelector("#mainContent");
   const seenDetails = new WeakSet();
+  const collapsedByDefault = "details.v8-archive, details.materials-archive, details.v8-slot-guide, details.v8-template-comparison";
   let autoExpand = true;
 
   function initializeDetails(node) {
@@ -859,7 +867,7 @@ function configureLearningUtilities() {
     for (const item of details) {
       if (seenDetails.has(item)) continue;
       seenDetails.add(item);
-      if (autoExpand) item.open = true;
+      if (autoExpand && !item.matches(collapsedByDefault)) item.open = true;
     }
   }
 
@@ -874,7 +882,9 @@ function configureLearningUtilities() {
   for (const [id, open] of [["expandAllContent", true], ["collapseAllContent", false]]) {
     document.getElementById(id).addEventListener("click", () => {
       autoExpand = open;
-      for (const details of main.querySelectorAll("details")) details.open = open;
+      for (const details of main.querySelectorAll("details")) {
+        if (!open || !details.matches(collapsedByDefault)) details.open = open;
+      }
       if (isNarrow()) setDrawer(false);
     });
   }
@@ -1237,6 +1247,7 @@ async function initialize() {
     entryIndex,
     renderTemplateCard: createTemplateCard,
     createReviewControl,
+    scrollToReadingStart,
     selectPrompt: (id) => {
       const state = entityHostStates.get("prompt");
       const index = state.entries.findIndex((entry) => entry.id === id);

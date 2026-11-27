@@ -1,6 +1,6 @@
 const CACHE_PREFIX = "kaoyan-english";
-const SHELL_CACHE = `${CACHE_PREFIX}-shell-page-zoom-8`;
-const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-page-zoom-8`;
+const SHELL_CACHE = `${CACHE_PREFIX}-shell-page-zoom-9`;
+const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-page-zoom-9`;
 const scopeUrl = new URL(self.registration.scope);
 const shellPaths = [
   "./",
@@ -34,6 +34,7 @@ const shellPaths = [
   "./assets/js/reading-app.js",
   "./assets/js/writing-data.js",
   "./assets/js/writing-exam-directions.js",
+  "./assets/js/writing-essay-picker.js",
   "./assets/js/writing-review.js",
   "./assets/js/writing-part-b-materials.js",
   "./assets/js/writing-v8-course.js",

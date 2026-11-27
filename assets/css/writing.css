@@ -548,6 +548,60 @@ summary { cursor: pointer; }
 .entity-page-button { padding: 7px 12px; }
 .entity-page-button:disabled { cursor: default; opacity: .38; }
 .entity-page-select { min-width: 0; padding: 7px 34px 7px 10px; }
+.essay-picker { position: relative; min-width: 0; }
+.essay-picker > button {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  min-height: max(44px, var(--page-tap-size, 44px));
+  padding-inline-end: 32px;
+  text-align: start;
+  overflow-wrap: anywhere;
+}
+.essay-picker > button::after {
+  content: "";
+  position: absolute;
+  inset-inline-end: 14px;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  border: solid currentColor;
+  border-width: 0 1.5px 1.5px 0;
+  transform: translateY(-70%) rotate(45deg);
+}
+.essay-picker > button[aria-expanded="true"]::after { transform: translateY(-25%) rotate(225deg); }
+.essay-picker-options {
+  position: absolute;
+  z-index: 12;
+  inset: calc(100% + 4px) 0 auto;
+  max-height: min(22rem, var(--picker-space));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px;
+  border: 1px solid var(--rule);
+  border-radius: 9px;
+  background: var(--surface);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 14%);
+}
+.essay-picker-up .essay-picker-options { inset: auto 0 calc(100% + 4px); }
+.essay-picker-group { margin: 4px 8px; color: var(--muted); font-size: .8rem; font-weight: 700; }
+.essay-picker-option {
+  display: block;
+  width: 100%;
+  min-height: max(44px, var(--page-tap-size, 44px));
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink);
+  text-align: start;
+  overflow-wrap: anywhere;
+}
+.essay-picker-option:is(:hover, :focus-visible, [aria-current="true"]) {
+  background: var(--interactive-soft);
+  color: var(--interactive-strong);
+}
+.essay-picker-option:focus-visible { outline-offset: -2px; }
 .empty-state {
   padding: 24px;
   border: 1px dashed var(--rule);
@@ -759,8 +813,8 @@ summary { cursor: pointer; }
 .materials-group-buttons button[aria-pressed="true"] { color: var(--interactive-strong); }
 .materials-group-logic { margin: 12px 0; color: var(--muted); font-size: .875rem; }
 .materials-picker { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-bottom: 14px; }
-.materials-picker label { font-size: .875rem; font-weight: 750; }
-.materials-picker select { flex: 1 1 210px; min-width: 0; }
+.materials-picker > span { font-size: .875rem; font-weight: 750; }
+.materials-picker > .essay-picker { flex: 1 1 210px; }
 .materials-case {
   container: materials-case / inline-size;
   padding: clamp(10px, 1.6vw, 18px);
@@ -1574,7 +1628,7 @@ html[data-theme="collage"] .takeaway-grid article:nth-child(2) { transform: tran
   .paragraph-label small { display: none; }
   .entity-card { padding: 13px 11px; }
   .entity-pager { grid-template-columns: 1fr 1fr; }
-  .entity-page-select { grid-column: 1 / -1; grid-row: 1; }
+  .entity-pager > :is(.entity-page-select, .essay-picker) { grid-column: 1 / -1; grid-row: 1; }
   .entity-page-button { grid-row: 2; }
   .model-response { padding: 11px 8px; }
   .sentence-en .gloss-note { white-space: normal; }

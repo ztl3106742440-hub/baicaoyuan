@@ -1,3 +1,5 @@
+import { createEssayPicker } from "./writing-essay-picker.js";
+
 export const PART_B_MATERIALS_FORMAT = "baicaoyuan-writing-part-b-materials-overlay";
 
 const starterGroups = ["benefits", "charts"];
@@ -138,13 +140,13 @@ export function renderPartBMaterials(overlay, registerLesson) {
   const more = element("div", "materials-group-buttons");
   advanced.append(more);
   const picker = element("div", "materials-picker");
-  const label = element("label", "", "选一道题练");
+  const label = element("span", "", "选一道题练");
   const select = element("select", "theme-item-select");
   select.id = "materialsCaseSelect";
-  label.htmlFor = select.id;
+  const essayPicker = createEssayPicker(select, "选一道题练");
   const logic = element("p", "materials-group-logic");
   const stage = element("div", "materials-stage");
-  picker.append(label, select);
+  picker.append(label, essayPicker.root);
   const buttons = new Map();
   const remembered = new Map();
   let currentGroup = null;
@@ -167,6 +169,7 @@ export function renderPartBMaterials(overlay, registerLesson) {
     if (!starterGroups.includes(currentGroup)) advanced.open = true;
     remembered.set(card.group, card.id);
     select.value = card.id;
+    essayPicker.sync();
     const lesson = renderCase(card, overlay);
     stage.replaceChildren(lesson);
     return lesson;
