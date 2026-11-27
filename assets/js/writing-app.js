@@ -15,6 +15,7 @@ import {
 } from "./writing-data.js";
 import {
   activateWritingOverlayLesson,
+  literacyLessonChapter,
   renderWritingOverlays,
   writingOverlaySearchItems,
 } from "./writing-overlays.js";
@@ -516,6 +517,10 @@ function createPromptCard(entry) {
   const v8 = entry.examPart === "B" ? createV8PromptExample(v8Course, entry) : null;
   const directions = createExamDirections(entry.year, entry.examPart);
   if (directions) card.append(directions);
+  if (v8) {
+    card.append(v8, createReviewControl(entry));
+    return card;
+  }
   if (review) {
     if (entry.examPart === "A" && entry.materialSummaryZh) {
       const note = createTeachingDetails("审题要点");
@@ -525,14 +530,10 @@ function createPromptCard(entry) {
       card.append(note);
     }
     const materials = createPartBPromptMaterials(partBMaterialsOverlay, entry.id);
-    if (materials && !v8) card.append(materials);
-    if (v8) card.append(v8);
-    const essay = createReviewedEssay(entry, review);
-    if (v8) essay.classList.add("v8-original-essay");
-    card.append(essay);
+    if (materials) card.append(materials);
+    card.append(createReviewedEssay(entry, review));
     const transfer = createTeachingDetails("换题怎么填");
     appendParagraph(transfer, "review-note", review.transfer);
-    if (materials && v8) transfer.append(materials);
     card.append(transfer, createReviewControl(entry));
     return card;
   }
@@ -559,11 +560,8 @@ function createPromptCard(entry) {
   card.append(practice);
 
   appendPromptStudyInfo(card, entry);
-  if (v8) card.append(v8);
-
   if (entry.modelResponse) {
     const response = element("details", "model-response");
-    if (v8) response.classList.add("v8-original-essay");
     response.open = true;
     response.append(element("summary", "", "原创参考范文"));
     const toolbar = element("div", "reading-toolbar");
@@ -941,7 +939,8 @@ function openStudyArchive(target) {
 }
 
 function showChapter(id, { updateHistory = false, focus = false, scroll = true, lessonId = null } = {}) {
-  const target = currentPartSections.find((section) => section.id === id) ?? currentPartSections[0];
+  const chapterId = lessonId ? literacyLessonChapter(lessonId) ?? id : id;
+  const target = currentPartSections.find((section) => section.id === chapterId) ?? currentPartSections[0];
   if (!target) return;
   activeChapterId = target.id;
   for (const section of currentPartSections) {

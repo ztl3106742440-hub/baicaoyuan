@@ -166,10 +166,10 @@ function essayParagraph(lines, index, mode) {
   return paragraph;
 }
 
-function essayView(course, item, facts = []) {
+function essayView(course, item, { facts = [], showTitle = true } = {}) {
   const article = element("article", "v8-essay");
   article.dataset.v8Case = item.id;
-  article.append(element("h4", "", caseTitle(item)));
+  if (showTitle) article.append(element("h4", "", caseTitle(item)));
   article.append(element("p", "v8-caption",
     `${item.year ? "真题题材 · 原创英文示范" : "原创模拟"} · ${materialNames[item.materialForm]} · ${modeNames[item.mode]} · ${item.wordCount} 词`));
   if (!item.year) article.append(element("p", "v8-caption", item.materialForm === "static" ? "图表比例为模拟题设。" : "场景与观点为模拟题设。"));
@@ -197,10 +197,7 @@ function essayView(course, item, facts = []) {
 
 export function createV8PromptExample(course, entry) {
   const item = course?.cases.find((candidate) => v8PromptId(candidate) === entry.id);
-  if (!item) return null;
-  const details = disclosure("按 V8 统一母版再写一篇", "v8-prompt-written");
-  details.append(essayView(course, item, entry.verifiedFacts));
-  return details;
+  return item ? essayView(course, item, { facts: entry.verifiedFacts, showTitle: false }) : null;
 }
 
 function renderCore(course, host, register) {
@@ -259,11 +256,10 @@ function archiveChildren(chapter, label) {
   return archive;
 }
 
-function renderTemplates(course, scrollToReadingStart) {
+function renderTemplates(course) {
   const chapter = document.getElementById("b-templates");
   const old = archiveChildren(chapter, "历史参考 · 旧版母版");
   const guide = element("section", "v8-panel v8-template-guide");
-  const cards = [];
   for (const [mode, ids, keys] of [
     ["A", ["2023", "2015"], ["effectNoun", "effect1", "mechanism1", "effect2"]],
     ["B", ["2025", "2026"], ["phenomenon", "cause1", "effect1", "cause2", "whether2"]],
@@ -282,50 +278,9 @@ function renderTemplates(course, scrollToReadingStart) {
     }
     pair.append(columns);
     body.append(pair);
-    cards.push(body);
+    guide.append(body);
   }
-  let index = 0;
-  const top = makePager("顶部");
-  const bottom = makePager("底部");
-  guide.append(top.pager, ...cards, bottom.pager);
   old.before(guide);
-  update();
-
-  function makePager(locationLabel) {
-    const pager = element("nav", "v8-template-pager");
-    pager.dataset.v8TemplatePager = "";
-    pager.setAttribute("aria-label", `大作文母版${locationLabel}翻篇`);
-    const previous = makeButton("上一篇", -1);
-    const next = makeButton("下一篇", 1);
-    const position = element("span", "v8-template-position");
-    pager.append(previous, position, next);
-    return { pager, previous, position, next };
-  }
-
-  function makeButton(label, step) {
-    const button = element("button", "entity-page-button", label);
-    button.type = "button";
-    button.addEventListener("click", () => {
-      const destination = index + step;
-      if (!cards[destination]) return;
-      index = destination;
-      update();
-      const heading = cards[index].querySelector("h3");
-      heading.tabIndex = -1;
-      heading.focus({ preventScroll: true });
-      scrollToReadingStart(guide);
-    });
-    return button;
-  }
-
-  function update() {
-    cards.forEach((card, cardIndex) => { card.hidden = cardIndex !== index; });
-    for (const { previous, position, next } of [top, bottom]) {
-      previous.disabled = index === 0;
-      next.disabled = index === cards.length - 1;
-      position.textContent = `${index + 1} / ${cards.length}`;
-    }
-  }
 }
 
 function renderTopics(course, register) {
@@ -391,7 +346,7 @@ function renderTopics(course, register) {
   oldTopics.before(index);
 }
 
-function renderLibrary(course, register, selectPrompt, hasPrompt) {
+function renderLibrary(course, { register, selectPrompt, hasPrompt, scrollToReadingStart }) {
   const oldHost = document.querySelector('#b-prompts [data-entity-kind="prompt"]');
   const library = section("按题选范文");
   library.dataset.v8Library = "";
@@ -408,58 +363,72 @@ function renderLibrary(course, register, selectPrompt, hasPrompt) {
   }
   const picker = createEssayPicker(select, "选择范文");
   const stage = element("div", "v8-library-stage");
-  const oldButton = element("button", "ghost-button v8-old-prompts", "查看原有题卡目录");
-  oldButton.type = "button";
-  library.append(picker.root, stage, oldButton);
-  oldHost.before(library);
+  const position = element("span", "v8-case-position");
+  position.setAttribute("aria-live", "polite");
+  const top = makePager("顶部", picker.root);
+  const bottom = makePager("底部", position);
+  library.append(top.nav);
+  oldHost.classList.add("v8-synced-prompts");
+  oldHost.before(library, stage);
+  oldHost.after(bottom.nav);
 
-  function showCase(item, reveal = false) {
-    oldHost.classList.add("v8-synced-prompts");
+  function showCase(index) {
+    const item = items[index];
+    if (!item) return null;
     stage.replaceChildren();
-    select.value = item.id;
+    select.selectedIndex = index;
     picker.sync();
-    const id = v8PromptId(item);
-    if (id && hasPrompt(id)) {
-      oldHost.hidden = false;
-      const card = selectPrompt(id);
-      const details = card.querySelector(".v8-prompt-written");
-      if (details && (reveal || !card.querySelector(".v8-original-essay"))) details.open = true;
-      return reveal ? details ?? card : card;
+    position.textContent = `${index + 1} / ${items.length}`;
+    for (const { previous, next } of [top, bottom]) {
+      previous.disabled = index === 0;
+      next.disabled = index === items.length - 1;
     }
-    oldHost.hidden = true;
+    const id = v8PromptId(item);
+    oldHost.hidden = !(id && hasPrompt(id));
+    if (!oldHost.hidden) return selectPrompt(id);
     const essay = essayView(course, item);
     stage.append(essay);
     return essay;
   }
 
-  function showOld() {
-    stage.replaceChildren();
-    select.selectedIndex = -1;
-    picker.sync();
-    oldHost.hidden = false;
-    oldHost.classList.remove("v8-synced-prompts");
+  function makePager(locationLabel, center) {
+    const nav = element("nav", "v8-case-pager");
+    nav.setAttribute("aria-label", `真题范文${locationLabel}翻篇`);
+    nav.dataset.v8CasePager = locationLabel === "顶部" ? "top" : "bottom";
+    const previous = pageButton("上一篇", -1);
+    const next = pageButton("下一篇", 1);
+    nav.append(previous, center, next);
+    return { nav, previous, next };
   }
 
-  oldButton.addEventListener("click", showOld);
-  select.addEventListener("change", () => {
-    const item = items.find((sample) => sample.id === select.value);
-    if (item) showCase(item);
-  });
-  for (const item of items) register(caseKey(item), () => showCase(item, true));
-  showCase(items.find((item) => item.id === "2023") ?? items[0]);
+  function pageButton(label, step) {
+    const button = element("button", "entity-page-button", label);
+    button.type = "button";
+    button.addEventListener("click", () => {
+      const index = select.selectedIndex + step;
+      if (!items[index]) return;
+      showCase(index);
+      picker.trigger.focus({ preventScroll: true });
+      scrollToReadingStart(library);
+    });
+    return button;
+  }
+
+  select.addEventListener("change", () => showCase(select.selectedIndex));
+  for (const [index, item] of items.entries()) register(caseKey(item), () => showCase(index));
+  showCase(Math.max(0, items.findIndex((item) => item.id === "2023")));
   return (id) => {
-    const item = items.find((candidate) => v8PromptId(candidate) === id);
-    if (item) showCase(item);
-    else showOld();
+    const index = items.findIndex((item) => v8PromptId(item) === id);
+    if (index >= 0) showCase(index);
   };
 }
 
-export function renderV8Course(course, { register, selectPrompt, hasPrompt, scrollToReadingStart }) {
+export function renderV8Course(course, options) {
   const host = document.querySelector('#b-core [data-writing-overlay="core-transfer"]');
-  renderCore(course, host, register);
-  renderTemplates(course, scrollToReadingStart);
-  renderTopics(course, register);
-  return renderLibrary(course, register, selectPrompt, hasPrompt);
+  renderCore(course, host, options.register);
+  renderTemplates(course);
+  renderTopics(course, options.register);
+  return renderLibrary(course, options);
 }
 
 export function v8SearchItems(course) {

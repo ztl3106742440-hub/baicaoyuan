@@ -17,6 +17,7 @@ const lessonActivators = new Map();
 const SECTION_ALIASES = new Map([
   ["a-five-steps", "a-overview"],
   ["a-navigation", "a-overview"],
+  ["b-prompts", "b-routes"],
 ]);
 const RETIRED_SECTIONS = new Set(["a-takeaways", "b-takeaways"]);
 
@@ -504,6 +505,11 @@ function renderLiteracyChapter(chapter) {
   return article;
 }
 
+export function literacyLessonChapter(lessonId) {
+  return document.querySelector(`.literacy-course [data-overlay-chapter-id="${CSS.escape(lessonId)}"]`)
+    ?.closest(".learning-section")?.id;
+}
+
 function renderLiteracyOverlay(overlay, part) {
   const chapters = overlay.chapters.filter((chapter) => chapter.part === part);
   const grouped = new Map();
@@ -531,7 +537,10 @@ function renderLiteracyOverlay(overlay, part) {
       label: `${targetId} 英文审题专题`,
       initialId: initial,
     });
-    for (const chapter of group) lessonActivators.set(chapter.id, () => deck.activate(chapter.id));
+    for (const item of items) lessonActivators.set(item.id, () => {
+      deck.activate(item.id);
+      return item.content;
+    });
     course.append(header, deck.root);
     target.append(course);
   }
